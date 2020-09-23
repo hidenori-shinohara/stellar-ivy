@@ -5,37 +5,27 @@ module set(t) = {
     type this
     relation member(E:t,S:this)
 
-    # Axiom of comprehension
-    axiom [comprehension] {
-        relation predicate(X:t)
-        property exists S. forall E. member(E,S) <-> predicate(E)
-    }
+    relation empty(S:this)
+    definition empty(S) = forall X. ~member(X, S)
+
+    ## Union
+    relation union(U:this, V:this, UV:this)
+    definition union(U, V, UV) = forall X. (member(X, U) | member(X, V)) <-> member(X, UV)
+
+    ## Subset
+    relation is_subset(S:this, T:this)
+    definition is_subset(S, T) = forall N. member(N, S) -> member(N, T)
 
     individual empty_set : this
     axiom forall E. ~member(E,empty_set)
 
     individual universe : this
     axiom forall E. member(E,universe)
-
 }
 
 type node
 instance set_of_nodes : set(node)
 # instance set_of_sets_of_nodes : set(set_of_nodes)
-
-# Set operations for set_of_nodes
-
-## Subset
-relation is_subset(S:set_of_nodes, T:set_of_nodes)
-definition is_subset(S, T) = forall N. set_of_nodes.member(N, S) -> set_of_nodes.member(N, T)
-
-## Union
-relation union(U:set_of_nodes, V:set_of_nodes, UV:set_of_nodes)
-definition union(U, V, UV) =
-    forall X. (set_of_nodes.member(X, U) | set_of_nodes.member(X, V)) <-> set_of_nodes.member(X, UV)
-
-# Property of each node
-relation well_behaved(N:node)
 
 # Define quorum slices
 relation is_quorum_slice(N:node, S:set_of_nodes)
@@ -48,8 +38,8 @@ axiom exists S. (is_quorum_slice(N, S))
 
 # Define quorums
 relation is_quorum(S:set_of_nodes)
-definition is_quorum(S) = (exists X. set_of_nodes.member(X, S)) & forall N. (set_of_nodes.member(N, S) -> exists Q. (is_quorum_slice(N, Q) & is_subset(Q, S)))
+definition is_quorum(S) = ~set_of_nodes.empty(S) & forall N. (set_of_nodes.member(N, S) -> exists Q. (is_quorum_slice(N, Q) & set_of_nodes.is_subset(Q, S)))
 
 theorem [union_of_quorums] {
-    property is_quorum(U) & is_quorum(V) & union(U, V, UV) -> is_quorum(UV)
+    property is_quorum(U) & is_quorum(V) & set_of_nodes.union(U, V, UV) -> is_quorum(UV)
 }
