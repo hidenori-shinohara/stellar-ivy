@@ -25,7 +25,6 @@ module set(t) = {
 
 type node
 instance set_of_nodes : set(node)
-# instance set_of_sets_of_nodes : set(set_of_nodes)
 
 # Define quorum slices
 relation is_quorum_slice(N:node, S:set_of_nodes)
@@ -40,6 +39,7 @@ axiom exists S. (is_quorum_slice(N, S))
 relation is_quorum(S:set_of_nodes)
 definition is_quorum(S) = ~set_of_nodes.empty(S) & forall N. (set_of_nodes.member(N, S) -> exists Q. (is_quorum_slice(N, Q) & set_of_nodes.is_subset(Q, S)))
 
+# The union of two quorums is a quorum.
 theorem [union_of_quorums] {
     property is_quorum(U) & is_quorum(V) & set_of_nodes.union(U, V, UV) -> is_quorum(UV)
 }
