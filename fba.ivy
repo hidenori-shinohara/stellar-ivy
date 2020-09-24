@@ -12,9 +12,17 @@ module set(t) = {
     relation union(U:this, V:this, UV:this)
     definition union(U, V, UV) = forall X. (member(X, U) | member(X, V)) <-> member(X, UV)
 
+    ## Union
+    relation intersection(U:this, V:this, UV:this)
+    definition intersection(U, V, UV) = forall X. (member(X, U) & member(X, V)) <-> member(X, UV)
+
     ## Subset
-    relation is_subset(S:this, T:this)
-    definition is_subset(S, T) = forall N. member(N, S) -> member(N, T)
+    relation subset(S:this, T:this)
+    definition subset(S, T) = forall N. member(N, S) -> member(N, T)
+
+    ## Subtract (S \ T = U)
+    relation subtract(S:this, T:this, U:this)
+    definition subtract(S, T, U) = forall N. (member(N, S) & ~member(N, T)) <-> member(N, U)
 
     individual empty_set : this
     axiom forall E. ~member(E,empty_set)
@@ -26,20 +34,31 @@ module set(t) = {
 type node
 instance set_of_nodes : set(node)
 
-# Define quorum slices
-relation is_quorum_slice(N:node, S:set_of_nodes)
+isolate fbas = {
+    individual nodes : set_of_nodes
 
-## Quorum slice must contain the node itself.
-axiom is_quorum_slice(N, S) -> set_of_nodes.member(N, S)
+    # Define quorum slices
+    relation is_quorum_slice(N:node, S:set_of_nodes)
 
-## Each node must have at least one quorum slice.
-axiom exists S. (is_quorum_slice(N, S))
+    ## Quorum slice must contain the node itself.
+    axiom set_of_nodes.member(N, nodes) & is_quorum_slice(N, S) -> set_of_nodes.subset(S, nodes)
 
-# Define quorums
-relation is_quorum(S:set_of_nodes)
-definition is_quorum(S) = ~set_of_nodes.empty(S) & forall N. (set_of_nodes.member(N, S) -> exists Q. (is_quorum_slice(N, Q) & set_of_nodes.is_subset(Q, S)))
+    ## Quorum slice must contain the node itself.
+    axiom set_of_nodes.member(N, nodes) & set_of_nodes.subset(S, nodes) -> (is_quorum_slice(N, S) -> set_of_nodes.member(N, S))
+
+    ## Each node must have at least one quorum slice.
+    axiom set_of_nodes.member(N, nodes) & set_of_nodes.subset(S, nodes) -> exists S. (is_quorum_slice(N, S))
+
+    # Define quorums
+    relation is_quorum(S:set_of_nodes)
+    definition is_quorum(S) =
+        ~set_of_nodes.empty(S) &
+        set_of_nodes.subset(S, nodes) &
+        forall N. (set_of_nodes.member(N, S) -> exists Q. (is_quorum_slice(N, Q) & set_of_nodes.subset(Q, S)))
+
+}
 
 # The union of two quorums is a quorum.
 theorem [union_of_quorums] {
-    property is_quorum(U) & is_quorum(V) & set_of_nodes.union(U, V, UV) -> is_quorum(UV)
+    property fbas.is_quorum(U) & fbas.is_quorum(V) & set_of_nodes.union(U, V, UV) -> fbas.is_quorum(UV)
 }
