@@ -5,6 +5,19 @@ module set(t) = {
     type this
     relation member(E:t,S:this)
 
+    axiom [comp] {
+        relation p(X:t)
+        property exists S. forall E. member(E,S) <-> p(E)
+    }
+
+    # Axiom of extensionality (not used here)
+
+    axiom [exten] {
+        property forall E. member(E,S) <-> member(E,T)
+        property S:this = T
+    }
+
+
     relation empty(S:this)
     definition empty(S) = forall X. ~member(X, S)
 
@@ -15,6 +28,10 @@ module set(t) = {
     ## Subset
     relation is_subset(S:this, T:this)
     definition is_subset(S, T) = forall N. member(N, S) -> member(N, T)
+
+    ## Subtract (i.e., Checks A \ B = C)
+    relation subtract(A:this, B:this, C:this)
+    definition subtract(A, B, C) = forall N. member(N, A) & ~member(N, B) <-> member(N, C)
 
     individual empty_set : this
     axiom forall E. ~member(E,empty_set)
@@ -33,13 +50,34 @@ relation is_quorum_slice(N:node, S:set_of_nodes)
 axiom is_quorum_slice(N, S) -> set_of_nodes.member(N, S)
 
 ## Each node must have at least one quorum slice.
-axiom exists S. (is_quorum_slice(N, S))
+axiom exists S. is_quorum_slice(N, S)
 
 # Define quorums
 relation is_quorum(S:set_of_nodes)
 definition is_quorum(S) = ~set_of_nodes.empty(S) & forall N. (set_of_nodes.member(N, S) -> exists Q. (is_quorum_slice(N, Q) & set_of_nodes.is_subset(Q, S)))
 
+
 # The union of two quorums is a quorum.
 theorem [union_of_quorums] {
     property is_quorum(U) & is_quorum(V) & set_of_nodes.union(U, V, UV) -> is_quorum(UV)
+}
+
+# Deleted FBAS
+
+# Check if S is a quorum slice of N
+# in <V, Q>^B.
+# *Must* check member(N, B) before calling this
+relation is_quorum_slice_delete(N:node, S:set_of_nodes, B:set_of_nodes)
+definition is_quorum_slice_delete(N, S, B) =
+    exists T. is_quorum_slice(N, T) & set_of_nodes.subtract(T, B, S)
+
+# <V, Q>^B is an FBAS
+# Part 1: Every quorum slice contains the node itself.
+theorem [deleted_fbas_is_fbas_1] {
+    property ~set_of_nodes.member(N, B) & is_quorum_slice_delete(N, S, B) -> set_of_nodes.member(N, S)
+}
+
+# Part 2: Every node in <V, Q>^B has at least one quorum slice.
+theorem [deleted_fbas_is_fbas_2] {
+    property ~set_of_nodes.member(N, B) -> exists S. is_quorum_slice_delete(N, S, B)
 }
