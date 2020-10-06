@@ -12,7 +12,7 @@ module set(t) = {
     relation union(U:this, V:this, UV:this)
     definition union(U, V, UV) = forall X. (member(X, U) | member(X, V)) <-> member(X, UV)
 
-    ## Union
+    ## Intersection
     relation intersection(U:this, V:this, UV:this)
     definition intersection(U, V, UV) = forall X. (member(X, U) & member(X, V)) <-> member(X, UV)
 
@@ -56,9 +56,16 @@ isolate fbas = {
         set_of_nodes.subset(S, nodes) &
         forall N. (set_of_nodes.member(N, S) -> exists Q. (is_quorum_slice(N, Q) & set_of_nodes.subset(Q, S)))
 
+    relation v_blocking(V:node, B:set_of_nodes)
+        = forall Sl, I. (is_quorum_slice(V, Sl) & set_of_nodes.intersection(Sl, B, I) -> ~set_of_nodes.empty(I))
 }
 
 # The union of two quorums is a quorum.
 theorem [union_of_quorums] {
     property fbas.is_quorum(U) & fbas.is_quorum(V) & set_of_nodes.union(U, V, UV) -> fbas.is_quorum(UV)
+}
+
+# The union of two v-blocking sets is v-blocking
+theorem [v_blocking_union] {
+    property fbas.v_blocking(V, B1) & fbas.v_blocking(V, B2) & set_of_nodes.union(B1, B2, B) -> fbas.v_blocking(V, B)
 }
