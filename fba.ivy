@@ -69,3 +69,8 @@ theorem [union_of_quorums] {
 theorem [v_blocking_union] {
     property fbas.v_blocking(V, B1) & fbas.v_blocking(V, B2) & set_of_nodes.union(B1, B2, B) -> fbas.v_blocking(V, B)
 }
+
+# Any superset of a v-blocking set is v-blocking
+theorem [v_blocking_superset] {
+    property fbas.v_blocking(V, B) & set_of_nodes.subset(B, BB) -> fbas.v_blocking(V, BB)
+}
