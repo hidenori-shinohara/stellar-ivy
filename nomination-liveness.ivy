@@ -58,6 +58,7 @@ object protocol = {
             received_confirm_nominate(N1, N2, V) := false;
         }
 
+        # n votes for nominate(v).
         action vote_nominate(n:node, v:value) = {
             # n is not allowed to vote for nominate(v)
             # if it already has a candidate value.
