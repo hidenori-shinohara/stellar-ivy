@@ -55,8 +55,18 @@ object protocol = {
             has_candidate_value(N) := false;
             received_vote_nominate(N1, N2, V) := false;
             received_accept_nominate(N1, N2, V) := false;
-            received_confirm_nominate(N1, N2, V) := false
+            received_confirm_nominate(N1, N2, V) := false;
         }
+
+        action vote_nominate(n:node, v:value) = {
+            # n is not allowed to vote for nominate(v)
+            # if it already has a candidate value.
+            assume ~has_candidate_value(n);
+
+            # bookkeeping.
+            voted_nominate(n, v) := true;
+        }
+
 
         # na heard that nb voted for nominate(v).
         # This may make it possible for na to accept nominate(v).
@@ -118,6 +128,7 @@ object protocol = {
                     forall N . member(N,Q) -> received_accept_nominate(na, N, v)) {
 
                 confirmed_nominate(na, v) := true;
+                has_candidate_value(na) := true;
             }
         }
     }
