@@ -42,7 +42,6 @@ object protocol = {
     relation confirmed_nominate(N:node, V:value)
     relation has_candidate_value(N:node)
 
-    # messages received
     # N1 heard that N2 {voted, accepted, confirmed} nominate(V)
     relation received_vote_nominate(N1:node, N2:node, V:value)
     relation received_accept_nominate(N1:node, N2:node, V:value)
@@ -66,7 +65,7 @@ object protocol = {
             # nb better have voted for nominate(v).
             assume voted_nominate(nb, v);
 
-            # bookkeeping.
+            # Bookkeeping.
             received_vote_nominate(na, nb, v) := true;
 
             # Check if na can accept nominate(v).
@@ -76,6 +75,50 @@ object protocol = {
                       received_accept_nominate(na,N,v)))) {
                 accepted_nominate(na,v) := true;
             };
+        }
+
+        # na heard that nb voted for nominate(v).
+        # This may make it possible for na to accept or confirm nominate(v).
+        # In SCP-safety.ivy, it checks the confirm stuff first.
+        # But I thought that it'd make more sense to accept first because
+        # I might be able to both accept and confirm nominate(v).
+        action receive_accept_nominate(na:node, nb:node, v:value) = {
+
+            # nb better have voted for nominate(v).
+            assume accepted_nominate(nb, v);
+
+            # Bookkeeping.
+            received_accept_nominate(na, nb, v) := true;
+
+            # If na is a member of a quorum in which
+            # everyone either voted for or accepted nominate(v),
+            # then na can accept it.
+            if (exists Q .
+                    is_quorum(Q) &
+                    member(na,Q) &
+                    (forall N . member(N,Q) ->
+                        (received_vote_nominate(na, N, v) |
+                         received_accept_nominate(na, N, v)))) {
+                accepted_nominate(na, v) := true;
+            };
+
+            # If there exists a na-blocking set in which every member
+            # accepted nominate(v), then na can accept it.
+            if (exists S .
+                    blocks_slices(S, na) &
+                    (forall N . member(N, S) -> received_accept_nominate(na, N, v))) {
+                accepted_nominate(na, v) := true;
+            };
+
+            # If na is a member of a quorum in which everyone accepted nominate(v),
+            # then na can confirm it.
+            if (exists Q .
+                    is_quorum(Q) &
+                    member(na, Q) &
+                    forall N . member(N,Q) -> received_accept_nominate(na, N, v)) {
+
+                confirmed_nominate(na, v) := true;
+            }
         }
     }
 }
