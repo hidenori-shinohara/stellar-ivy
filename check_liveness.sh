@@ -1,1 +1,1 @@
-ivy_check nomination-liveness.ivy
+ivy_check complete=fo nomination-liveness.ivy
