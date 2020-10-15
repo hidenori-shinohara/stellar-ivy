@@ -158,7 +158,8 @@ object protocol = {
         # In other words, what I'm trying to prove here is
         # "Once sufficient messages have been delivered, N will confirm nominate(V)."
         #
-        # Unfortunately, there is something with the code, or IVy can't prove this directly.
+        # Unfortunately, there is something wrong with the code,
+        # or IVy can't prove this directly. (or both!)
         # Run "ivy_check diagnose=true nomination-liveness.ivy" to see a CTI.
         conjecture [eventually_at_least_one_candidate_value]
             intertwined(N) & voted_nominate(N, V)
