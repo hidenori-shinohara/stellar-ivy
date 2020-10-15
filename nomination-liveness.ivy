@@ -65,6 +65,7 @@ object protocol = {
 
         # n votes for nominate(v).
         action vote_nominate(n:node, v:value) = {
+
             # n is not allowed to vote for nominate(v)
             # if it already has a candidate value.
             assume ~has_candidate_value(n);
@@ -78,7 +79,7 @@ object protocol = {
         # This may make it possible for na to accept nominate(v).
         action receive_vote_nominate(na:node, nb:node, v:value) = {
 
-            # nb better have voted for nominate(v).
+            # This action is possible if and only if nb has voted for nominate(v).
             assume voted_nominate(nb, v);
 
             # Bookkeeping.
@@ -100,7 +101,7 @@ object protocol = {
         # I might be able to both accept and confirm nominate(v).
         action receive_accept_nominate(na:node, nb:node, v:value) = {
 
-            # nb better have voted for nominate(v).
+            # This action is possible if and only if nb has voted for nominate(v).
             assume accepted_nominate(nb, v);
 
             # Bookkeeping.
