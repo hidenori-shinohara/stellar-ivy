@@ -161,6 +161,7 @@ object protocol = {
         # Unfortunately, there is something wrong with the code,
         # or IVy can't prove this directly. (or both!)
         # Run "ivy_check diagnose=true nomination-liveness.ivy" to see a CTI.
+        # Alternatively, see output.txt.
         conjecture [eventually_at_least_one_candidate_value]
             intact(N) & voted_nominate(N, X)
                 -> (confirmed_nominate(N, X) |

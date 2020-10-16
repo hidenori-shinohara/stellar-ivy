@@ -1,0 +1,51 @@
+[
+    protocol.voted_nominate(1,0) = true
+    protocol.voted_nominate(0,0) = false
+    @X = 0
+    intertwined(0) = true
+    intertwined(1) = true
+    blocks_slices(0,0) = false
+    blocks_slices(0,1) = false
+    protocol.received_vote_nominate(0,0,0) = true
+    protocol.received_vote_nominate(0,1,0) = true
+    protocol.received_vote_nominate(1,0,0) = true
+    protocol.received_vote_nominate(1,1,0) = true
+    is_quorum(0) = true
+    member(0,0) = true
+    member(1,0) = true
+    well_behaved(0) = true
+    well_behaved(1) = true
+    intact(0) = true
+    intact(1) = true
+    @N = 1
+    protocol.accepted_nominate(0,0) = true
+    protocol.accepted_nominate(1,0) = true
+    protocol.received_accept_nominate(0,1,0) = true
+    protocol.received_accept_nominate(0,0,0) = false
+    protocol.received_accept_nominate(1,0,0) = false
+    protocol.received_accept_nominate(1,1,0) = false
+    protocol.confirmed_nominate(0,0) = false
+    protocol.confirmed_nominate(1,0) = false
+    protocol.has_candidate_value(0) = false
+    protocol.has_candidate_value(1) = false
+]
+call protocol.actions.receive_accept_nominate
+
+{
+    [
+        fml:x = 0
+        fml:na = 1
+        fml:nb = 0
+    ]
+    nomination-liveness.ivy: line 104: assume protocol.accepted_nominate(fml:nb,fml:x)
+
+    nomination-liveness.ivy: line 107: protocol.received_accept_nominate(fml:na,fml:nb,fml:x) := true
+
+    [
+        protocol.received_accept_nominate(1,0,0) = true
+    ]
+    nomination-liveness.ivy: line 118: protocol.accepted_nominate(fml:na,fml:x) := true
+
+}
+
+
