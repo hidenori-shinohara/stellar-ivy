@@ -1,3 +1,33 @@
+
+Isolate protocol.liveness:
+
+    The following properties are assumed as axioms:
+        nomination-liveness.ivy: intact_implies_intertwined
+        nomination-liveness.ivy: intertwined_implies_well_behaved
+        nomination-liveness.ivy: intact_node_v_blocking
+        nomination-liveness.ivy: set_of_intact_nodes_quorum
+        nomination-liveness.ivy: line 26: qi_intertwined.prop1
+
+    The inductive invariant consists of the following conjectures:
+        nomination-liveness.ivy: line 165: protocol.liveness.eventually_at_least_one_candidate_value
+
+    The following action implementations are present:
+        nomination-liveness.ivy: line 101: implementation of protocol.actions.receive_accept_nominate
+        nomination-liveness.ivy: line 79: implementation of protocol.actions.receive_vote_nominate
+        nomination-liveness.ivy: line 66: implementation of protocol.actions.vote_nominate
+
+    The following initializers are present:
+        nomination-liveness.ivy: line 56: protocol.actions.init[after3]
+
+    Initialization must establish the invariant
+        nomination-liveness.ivy: line 165: protocol.liveness.eventually_at_least_one_candidate_value ... PASS
+
+    Any assertions in initializers must be checked ... PASS
+
+    The following set of external actions must preserve the invariant:
+        (internal) ext:protocol.actions.receive_accept_nominate
+            nomination-liveness.ivy: line 165: protocol.liveness.eventually_at_least_one_candidate_value ... FAIL
+searching for a small model... done
 [
     protocol.voted_nominate(1,0) = true
     protocol.voted_nominate(0,0) = false
