@@ -33,11 +33,11 @@ trusted isolate qi_intact = {
 
 relation blocks_slices(S:nset, N:node)
 
-# if set R blocks an intact node then R contains an intact node
+# If set R blocks an intact node then R contains an intact node
 # QAG edge nset -> node
 axiom (exists N . intact(N) & blocks_slices(S,N)) -> exists N2 . member(N2,S) & intact(N2)
 
-# the set of all intact nodes is a quorum
+# The set of all intact nodes is a quorum
 axiom exists Q . (forall N . member(N,Q) <-> intact(N)) & is_quorum(Q)
 
 
@@ -145,10 +145,10 @@ object protocol = {
     }
 
     isolate liveness = {
-        # Here, we prove that eventually the set of intact nodes
-        # will produce a candidate value.
+        # Here, we prove that the set of intact nodes will
+        # *eventually* produce a candidate value.
         #
-        # We will do so without temporal logic.
+        # We will do so without using temporal logic.
         # Let V be a value and N be an intertwined node.
         # Suppose that N has voted for V.
         # At any point, at least one of the following statements must be true:
