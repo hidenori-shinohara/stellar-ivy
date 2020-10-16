@@ -71,6 +71,12 @@ object protocol = {
 
             # bookkeeping.
             voted_nominate(v, x) := true;
+            received_vote_nominate(v, v, x) := true;
+
+            # TODO
+            # So, if {v} is a quorum, this will let v accept & confirm nominate(x).
+            # Take care of that issue.
+            # Unfortunately, IVy doesn't seem to support recursive definitions.
         }
 
 
@@ -90,6 +96,7 @@ object protocol = {
                      (received_vote_nominate(va, V, x) |
                       received_accept_nominate(va, V, x)))) {
                 accepted_nominate(va, x) := true;
+                received_accept_nominate(va, va, x) := true;
             };
         }
 
@@ -116,14 +123,16 @@ object protocol = {
                         (received_vote_nominate(va, V, x) |
                          received_accept_nominate(va, V, x)))) {
                 accepted_nominate(va, x) := true;
+                received_accept_nominate(va, va, x) := true;
             };
 
             # If there exists a na-blocking set in which every member
             # accepted nominate(x), then va can accept it.
             if (exists S .
                     blocks_slices(S, va) &
-                    (forall V . V ~= va & member(V, S) -> received_accept_nominate(va, V, x))) {
+                    (forall V . member(V, S) -> received_accept_nominate(va, V, x))) {
                 accepted_nominate(va, x) := true;
+                received_accept_nominate(va, va, x) := true;
             };
 
             # If va is a member of a quorum in which everyone accepted nominate(x),
@@ -131,7 +140,7 @@ object protocol = {
             if (exists Q .
                     is_quorum(Q) &
                     member(va, Q) &
-                    forall V . V ~= va & member(V,Q) -> received_accept_nominate(va, V, x)) {
+                    forall V . member(V,Q) -> received_accept_nominate(va, V, x)) {
 
                 confirmed_nominate(va, x) := true;
                 has_candidate_value(va) := true;
@@ -146,7 +155,7 @@ object protocol = {
 
     isolate liveness = {
         # For some reason, IVy can't prove this even though this seems fairly straightforward...
-        conjecture forall Va, Vb, X . (received_vote_nominate(Va, Vb, X) -> voted_nominate(Va, X))
+        conjecture received_vote_nominate(Va, Vb, X) -> voted_nominate(Va, X)
 
         # Here, we prove that the set of intact nodes will
         # *eventually* produce a candidate value.
