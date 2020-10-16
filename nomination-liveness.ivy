@@ -149,14 +149,14 @@ object protocol = {
         # *eventually* produce a candidate value.
         #
         # We will do so without using temporal logic.
-        # Let V be a value and N be an intertwined node.
-        # Suppose that N has voted for V.
+        # Let X be a value and N be an intertwined node.
+        # Suppose that N has voted for X.
         # At any point, at least one of the following statements must be true:
-        # 1) N has confirmed nominate(V), OR
-        # 2) There exists a message about V that has not been delivered.
+        # 1) N has confirmed nominate(X), OR
+        # 2) There exists a message about X that has not been delivered.
         #
         # In other words, what I'm trying to prove here is
-        # "Once sufficient messages have been delivered, N will confirm nominate(V)."
+        # "Once sufficient messages have been delivered, N will confirm nominate(X)."
         #
         # Unfortunately, there is something wrong with the code,
         # or IVy can't prove this directly. (or both!)
