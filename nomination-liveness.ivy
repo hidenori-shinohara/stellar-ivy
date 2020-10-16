@@ -164,9 +164,11 @@ object protocol = {
         conjecture [eventually_at_least_one_candidate_value]
             intertwined(N) & voted_nominate(N, X)
                 -> (confirmed_nominate(N, X) |
-                    (exists N1, N2 . voted_nominate(N2, X) &
+                    (exists N1, N2 . N1 ~= N2 &
+                                     voted_nominate(N2, X) &
                                      ~received_vote_nominate(N1, N2, X)) |
-                    (exists N1, N2 . accepted_nominate(N2, X) &
+                    (exists N1, N2 . N1 ~= N2 &
+                                     accepted_nominate(N2, X) &
                                      ~received_accept_nominate(N1, N2, X)))
     } with actions, qi_intertwined
 }
