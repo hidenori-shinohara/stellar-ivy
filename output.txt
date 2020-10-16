@@ -9,24 +9,24 @@ Isolate protocol.liveness:
         nomination-liveness.ivy: line 26: qi_intertwined.prop1
 
     The inductive invariant consists of the following conjectures:
-        nomination-liveness.ivy: line 165: protocol.liveness.eventually_at_least_one_candidate_value
+        nomination-liveness.ivy: line 169: protocol.liveness.eventually_at_least_one_candidate_value
 
     The following action implementations are present:
-        nomination-liveness.ivy: line 101: implementation of protocol.actions.receive_accept_nominate
-        nomination-liveness.ivy: line 79: implementation of protocol.actions.receive_vote_nominate
+        nomination-liveness.ivy: line 103: implementation of protocol.actions.receive_accept_nominate
+        nomination-liveness.ivy: line 80: implementation of protocol.actions.receive_vote_nominate
         nomination-liveness.ivy: line 66: implementation of protocol.actions.vote_nominate
 
     The following initializers are present:
         nomination-liveness.ivy: line 56: protocol.actions.init[after3]
 
     Initialization must establish the invariant
-        nomination-liveness.ivy: line 165: protocol.liveness.eventually_at_least_one_candidate_value ... PASS
+        nomination-liveness.ivy: line 169: protocol.liveness.eventually_at_least_one_candidate_value ... PASS
 
     Any assertions in initializers must be checked ... PASS
 
     The following set of external actions must preserve the invariant:
         (internal) ext:protocol.actions.receive_accept_nominate
-            nomination-liveness.ivy: line 165: protocol.liveness.eventually_at_least_one_candidate_value ... FAIL
+            nomination-liveness.ivy: line 169: protocol.liveness.eventually_at_least_one_candidate_value ... FAIL
 searching for a small model... done
 [
     protocol.voted_nominate(1,0) = true
@@ -41,17 +41,17 @@ searching for a small model... done
     protocol.received_vote_nominate(1,0,0) = true
     protocol.received_vote_nominate(1,1,0) = true
     is_quorum(0) = true
-    member(0,0) = true
     member(1,0) = true
+    member(0,0) = false
     well_behaved(0) = true
     well_behaved(1) = true
-    intact(0) = true
     intact(1) = true
+    intact(0) = false
     @N = 1
-    protocol.accepted_nominate(0,0) = true
     protocol.accepted_nominate(1,0) = true
-    protocol.received_accept_nominate(0,1,0) = true
+    protocol.accepted_nominate(0,0) = false
     protocol.received_accept_nominate(0,0,0) = false
+    protocol.received_accept_nominate(0,1,0) = false
     protocol.received_accept_nominate(1,0,0) = false
     protocol.received_accept_nominate(1,1,0) = false
     protocol.confirmed_nominate(0,0) = false
@@ -64,18 +64,16 @@ call protocol.actions.receive_accept_nominate
 {
     [
         fml:x = 0
-        fml:na = 1
-        fml:nb = 0
+        fml:na = 0
+        fml:nb = 1
     ]
-    nomination-liveness.ivy: line 104: assume protocol.accepted_nominate(fml:nb,fml:x)
+    nomination-liveness.ivy: line 106: assume protocol.accepted_nominate(fml:nb,fml:x)
 
-    nomination-liveness.ivy: line 107: protocol.received_accept_nominate(fml:na,fml:nb,fml:x) := true
+    nomination-liveness.ivy: line 109: protocol.received_accept_nominate(fml:na,fml:nb,fml:x) := true
 
     [
-        protocol.received_accept_nominate(1,0,0) = true
+        protocol.received_accept_nominate(0,1,0) = true
     ]
-    nomination-liveness.ivy: line 118: protocol.accepted_nominate(fml:na,fml:x) := true
-
 }
 
 

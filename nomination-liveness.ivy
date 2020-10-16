@@ -4,92 +4,92 @@ type value
 type node
 type nset # sets of nodes
 
-relation well_behaved(N:node)
-relation intertwined(N:node)
-relation intact(N:node)
+relation well_behaved(V:node)
+relation intertwined(V:node)
+relation intact(V:node)
 
 # Intact nodes are intertwined
-axiom [intact_implies_intertwined] intact(N) -> intertwined(N)
+axiom [intact_implies_intertwined] intact(V) -> intertwined(V)
 
 # Intertwined nodes are well-behaved
-axiom [intertwined_implies_well_behaved] intertwined(N) -> well_behaved(N)
+axiom [intertwined_implies_well_behaved] intertwined(V) -> well_behaved(V)
 
-relation member(N:node, S:nset)
+relation member(V:node, S:nset)
 relation is_quorum(Q:nset)
 
 # quorum intersection
 # QAG edge nset -> node
 # The intersection of any two quorums Q1, Q2 containing intertwined nodes contains at a well-behaved node.
 trusted isolate qi_intertwined = {
-    property (exists N1 . intertwined(N1) & is_quorum(Q1) & member(N1,Q1)) &
-                 (exists N2 . intertwined(N2) & is_quorum(Q2) & member(N2,Q2))
-             -> exists N3 . well_behaved(N3) & member(N3,Q1) & member(N3,Q2)
+    property (exists V1 . intertwined(V1) & is_quorum(Q1) & member(V1,Q1)) &
+                 (exists V2 . intertwined(V2) & is_quorum(Q2) & member(V2,Q2))
+             -> exists V3 . well_behaved(V3) & member(V3,Q1) & member(V3,Q2)
 }
 trusted isolate qi_intact = {
-    property (exists N1 . intact(N1) & is_quorum(Q1) & member(N1,Q1)) &
-                 (exists N2 . intact(N2) & is_quorum(Q2) & member(N2,Q2))
-             -> exists N3 . intact(N3) & member(N3,Q1) & member(N3,Q2)
+    property (exists V1 . intact(V1) & is_quorum(Q1) & member(V1,Q1)) &
+                 (exists V2 . intact(V2) & is_quorum(Q2) & member(V2,Q2))
+             -> exists V3 . intact(V3) & member(V3,Q1) & member(V3,Q2)
 }
 
-relation blocks_slices(S:nset, N:node)
+relation blocks_slices(S:nset, V:node)
 
 # If set R blocks an intact node then R contains an intact node
 # QAG edge nset -> node
-axiom [intact_node_v_blocking] (exists N . intact(N) & blocks_slices(S,N)) -> exists N2 . member(N2,S) & intact(N2)
+axiom [intact_node_v_blocking] (exists V . intact(V) & blocks_slices(S,V)) -> exists V2 . member(V2,S) & intact(V2)
 
 # The set of all intact nodes is a quorum
-axiom [set_of_intact_nodes_quorum] exists Q . (forall N . member(N,Q) <-> intact(N)) & is_quorum(Q)
+axiom [set_of_intact_nodes_quorum] exists Q . (forall V . member(V,Q) <-> intact(V)) & is_quorum(Q)
 
 
 object protocol = {
 
-    relation voted_nominate(N:node, X:value)
-    relation accepted_nominate(N:node, X:value)
-    relation confirmed_nominate(N:node, X:value)
-    relation has_candidate_value(N:node)
+    relation voted_nominate(V:node, X:value)
+    relation accepted_nominate(V:node, X:value)
+    relation confirmed_nominate(V:node, X:value)
+    relation has_candidate_value(V:node)
 
-    # N1 heard that N2 {voted, accepted} nominate(X)
-    relation received_vote_nominate(N1:node, N2:node, X:value)
-    relation received_accept_nominate(N1:node, N2:node, X:value)
+    # V1 heard that V2 {voted, accepted} nominate(X)
+    relation received_vote_nominate(V1:node, V2:node, X:value)
+    relation received_accept_nominate(V1:node, V2:node, X:value)
 
     object actions = {
         after init {
-            voted_nominate(N, X) := false;
-            accepted_nominate(N, X) := false;
-            confirmed_nominate(N, X) := false;
-            has_candidate_value(N) := false;
-            received_vote_nominate(N1, N2, X) := false;
-            received_accept_nominate(N1, N2, X) := false;
+            voted_nominate(V, X) := false;
+            accepted_nominate(V, X) := false;
+            confirmed_nominate(V, X) := false;
+            has_candidate_value(V) := false;
+            received_vote_nominate(V1, V2, X) := false;
+            received_accept_nominate(V1, V2, X) := false;
         }
 
         # n votes for nominate(x).
-        action vote_nominate(n:node, x:value) = {
+        action vote_nominate(v:node, x:value) = {
 
             # n is not allowed to vote for nominate(x)
             # if it already has a candidate value.
-            assume ~has_candidate_value(n);
+            assume ~has_candidate_value(v);
 
             # bookkeeping.
-            voted_nominate(n, x) := true;
+            voted_nominate(v, x) := true;
         }
 
 
         # na heard that nb voted for nominate(x).
         # This may make it possible for na to accept nominate(x).
-        action receive_vote_nominate(na:node, nb:node, x:value) = {
+        action receive_vote_nominate(va:node, vb:node, x:value) = {
 
             # This action is possible if and only if nb has voted for nominate(v).
-            assume voted_nominate(nb, x);
+            assume voted_nominate(vb, x);
 
             # Bookkeeping.
-            received_vote_nominate(na, nb, x) := true;
+            received_vote_nominate(va, vb, x) := true;
 
             # Check if na can accept nominate(v).
-            if (exists Q . is_quorum(Q) & member(na, Q) &
-                    (forall N . member(N,Q) ->
-                     (received_vote_nominate(na, N, x) |
-                      received_accept_nominate(na, N, x)))) {
-                accepted_nominate(na, x) := true;
+            if (exists Q . is_quorum(Q) & member(va, Q) &
+                    (forall V . V ~= va & member(V,Q) ->
+                     (received_vote_nominate(va, V, x) |
+                      received_accept_nominate(va, V, x)))) {
+                accepted_nominate(va, x) := true;
             };
         }
 
@@ -98,43 +98,43 @@ object protocol = {
         # In SCP-safety.ivy, it checks the confirm stuff first.
         # But I thought that it'd make more sense to accept first because
         # I might be able to both accept and confirm nominate(x).
-        action receive_accept_nominate(na:node, nb:node, x:value) = {
+        action receive_accept_nominate(va:node, vb:node, x:value) = {
 
             # This action is possible if and only if nb has voted for nominate(x).
-            assume accepted_nominate(nb, x);
+            assume accepted_nominate(vb, x);
 
             # Bookkeeping.
-            received_accept_nominate(na, nb, x) := true;
+            received_accept_nominate(va, vb, x) := true;
 
             # If na is a member of a quorum in which
             # everyone either voted for or accepted nominate(x),
             # then na can accept it.
             if (exists Q .
                     is_quorum(Q) &
-                    member(na,Q) &
-                    (forall N . member(N,Q) ->
-                        (received_vote_nominate(na, N, x) |
-                         received_accept_nominate(na, N, x)))) {
-                accepted_nominate(na, x) := true;
+                    member(va,Q) &
+                    (forall V . V ~= va & member(V,Q) ->
+                        (received_vote_nominate(va, V, x) |
+                         received_accept_nominate(va, V, x)))) {
+                accepted_nominate(va, x) := true;
             };
 
             # If there exists a na-blocking set in which every member
             # accepted nominate(x), then na can accept it.
             if (exists S .
-                    blocks_slices(S, na) &
-                    (forall N . member(N, S) -> received_accept_nominate(na, N, x))) {
-                accepted_nominate(na, x) := true;
+                    blocks_slices(S, va) &
+                    (forall V . V ~= va & member(V, S) -> received_accept_nominate(va, V, x))) {
+                accepted_nominate(va, x) := true;
             };
 
             # If na is a member of a quorum in which everyone accepted nominate(x),
             # then na can confirm it.
             if (exists Q .
                     is_quorum(Q) &
-                    member(na, Q) &
-                    forall N . member(N,Q) -> received_accept_nominate(na, N, x)) {
+                    member(va, Q) &
+                    forall V . V ~= va & member(V,Q) -> received_accept_nominate(va, V, x)) {
 
-                confirmed_nominate(na, x) := true;
-                has_candidate_value(na) := true;
+                confirmed_nominate(va, x) := true;
+                has_candidate_value(va) := true;
             }
         }
 
@@ -145,32 +145,35 @@ object protocol = {
     }
 
     isolate liveness = {
+        invariant received_vote_nominate(Va, Vb, X) -> voted_nominate(Va, X)
+        invariant received_accept_nominate(Va, Vb, X) -> accepted_nominate(Va, X)
+
         # Here, we prove that the set of intact nodes will
         # *eventually* produce a candidate value.
         #
         # We will do so without using temporal logic.
-        # Let X be a value and N be an intertwined node.
-        # Suppose that N has voted for X.
+        # Let X be a value and V be an intertwined node.
+        # Suppose that V has voted for X.
         # At any point, at least one of the following statements must be true:
-        # 1) N has confirmed nominate(X), OR
+        # 1) V has confirmed nominate(X), OR
         # 2) There exists a message about X that has not been delivered.
         #
         # In other words, what I'm trying to prove here is
-        # "Once sufficient messages have been delivered, N will confirm nominate(X)."
+        # "Once sufficient messages have been delivered, V will confirm nominate(X)."
         #
         # Unfortunately, there is something wrong with the code,
         # or IVy can't prove this directly. (or both!)
         # Run "ivy_check diagnose=true nomination-liveness.ivy" to see a CTI.
         # Alternatively, see output.txt.
         conjecture [eventually_at_least_one_candidate_value]
-            intact(N) & voted_nominate(N, X)
-                -> (confirmed_nominate(N, X) |
-                    (exists N1, N2 . N1 ~= N2 &
-                                     voted_nominate(N2, X) &
-                                     ~received_vote_nominate(N1, N2, X)) |
-                    (exists N1, N2 . N1 ~= N2 &
-                                     accepted_nominate(N2, X) &
-                                     ~received_accept_nominate(N1, N2, X)))
+            intact(V) & voted_nominate(V, X)
+                -> (confirmed_nominate(V, X) |
+                    (exists V1, V2 . V1 ~= V2 &
+                                     voted_nominate(V2, X) &
+                                     ~received_vote_nominate(V1, V2, X)) |
+                    (exists V1, V2 . V1 ~= V2 &
+                                     accepted_nominate(V2, X) &
+                                     ~received_accept_nominate(V1, V2, X)))
     } with actions,
            qi_intertwined,
            qi_intertwined,
