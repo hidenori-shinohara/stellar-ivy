@@ -74,8 +74,8 @@ object protocol = {
         }
 
 
-        # na heard that nb voted for nominate(x).
-        # This may make it possible for na to accept nominate(x).
+        # va heard that nb voted for nominate(x).
+        # This may make it possible for va to accept nominate(x).
         action receive_vote_nominate(va:node, vb:node, x:value) = {
 
             # This action is possible if and only if nb has voted for nominate(v).
@@ -84,7 +84,7 @@ object protocol = {
             # Bookkeeping.
             received_vote_nominate(va, vb, x) := true;
 
-            # Check if na can accept nominate(v).
+            # Check if va can accept nominate(v).
             if (exists Q . is_quorum(Q) & member(va, Q) &
                     (forall V . V ~= va & member(V,Q) ->
                      (received_vote_nominate(va, V, x) |
@@ -93,8 +93,8 @@ object protocol = {
             };
         }
 
-        # na heard that nb voted for nominate(x).
-        # This may make it possible for na to accept or confirm nominate(x).
+        # va heard that nb voted for nominate(x).
+        # This may make it possible for va to accept or confirm nominate(x).
         # In SCP-safety.ivy, it checks the confirm stuff first.
         # But I thought that it'd make more sense to accept first because
         # I might be able to both accept and confirm nominate(x).
@@ -106,9 +106,9 @@ object protocol = {
             # Bookkeeping.
             received_accept_nominate(va, vb, x) := true;
 
-            # If na is a member of a quorum in which
+            # If va is a member of a quorum in which
             # everyone either voted for or accepted nominate(x),
-            # then na can accept it.
+            # then va can accept it.
             if (exists Q .
                     is_quorum(Q) &
                     member(va,Q) &
@@ -119,15 +119,15 @@ object protocol = {
             };
 
             # If there exists a na-blocking set in which every member
-            # accepted nominate(x), then na can accept it.
+            # accepted nominate(x), then va can accept it.
             if (exists S .
                     blocks_slices(S, va) &
                     (forall V . V ~= va & member(V, S) -> received_accept_nominate(va, V, x))) {
                 accepted_nominate(va, x) := true;
             };
 
-            # If na is a member of a quorum in which everyone accepted nominate(x),
-            # then na can confirm it.
+            # If va is a member of a quorum in which everyone accepted nominate(x),
+            # then va can confirm it.
             if (exists Q .
                     is_quorum(Q) &
                     member(va, Q) &
@@ -145,8 +145,8 @@ object protocol = {
     }
 
     isolate liveness = {
-        invariant received_vote_nominate(Va, Vb, X) -> voted_nominate(Va, X)
-        invariant received_accept_nominate(Va, Vb, X) -> accepted_nominate(Va, X)
+        # For some reason, IVy can't prove this even though this seems fairly straightforward...
+        conjecture forall Va, Vb, X . (received_vote_nominate(Va, Vb, X) -> voted_nominate(Va, X))
 
         # Here, we prove that the set of intact nodes will
         # *eventually* produce a candidate value.
@@ -159,7 +159,7 @@ object protocol = {
         # 2) There exists a message about X that has not been delivered.
         #
         # In other words, what I'm trying to prove here is
-        # "Once sufficient messages have been delivered, V will confirm nominate(X)."
+        # "If V votes for X, once all messages about X have been delivered, V will accept X."
         #
         # Unfortunately, there is something wrong with the code,
         # or IVy can't prove this directly. (or both!)
