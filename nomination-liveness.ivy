@@ -8,11 +8,11 @@ relation well_behaved(N:node)
 relation intertwined(N:node)
 relation intact(N:node)
 
-# intact nodes are intertwined
-axiom intact(N) -> intertwined(N)
+# Intact nodes are intertwined
+axiom [intact_implies_intertwined] intact(N) -> intertwined(N)
 
-# intertwined nodes are well-behaved
-axiom intertwined(N) -> well_behaved(N)
+# Intertwined nodes are well-behaved
+axiom [intertwined_implies_well_behaved] intertwined(N) -> well_behaved(N)
 
 relation member(N:node, S:nset)
 relation is_quorum(Q:nset)
@@ -35,10 +35,10 @@ relation blocks_slices(S:nset, N:node)
 
 # If set R blocks an intact node then R contains an intact node
 # QAG edge nset -> node
-axiom (exists N . intact(N) & blocks_slices(S,N)) -> exists N2 . member(N2,S) & intact(N2)
+axiom [intact_node_v_blocking] (exists N . intact(N) & blocks_slices(S,N)) -> exists N2 . member(N2,S) & intact(N2)
 
 # The set of all intact nodes is a quorum
-axiom exists Q . (forall N . member(N,Q) <-> intact(N)) & is_quorum(Q)
+axiom [set_of_intact_nodes_quorum] exists Q . (forall N . member(N,Q) <-> intact(N)) & is_quorum(Q)
 
 
 object protocol = {
@@ -162,7 +162,7 @@ object protocol = {
         # or IVy can't prove this directly. (or both!)
         # Run "ivy_check diagnose=true nomination-liveness.ivy" to see a CTI.
         conjecture [eventually_at_least_one_candidate_value]
-            intertwined(N) & voted_nominate(N, X)
+            intact(N) & voted_nominate(N, X)
                 -> (confirmed_nominate(N, X) |
                     (exists N1, N2 . N1 ~= N2 &
                                      voted_nominate(N2, X) &
@@ -170,5 +170,11 @@ object protocol = {
                     (exists N1, N2 . N1 ~= N2 &
                                      accepted_nominate(N2, X) &
                                      ~received_accept_nominate(N1, N2, X)))
-    } with actions, qi_intertwined
+    } with actions,
+           qi_intertwined,
+           qi_intertwined,
+           intertwined_implies_well_behaved,
+           intact_implies_intertwined,
+           intact_node_v_blocking,
+           set_of_intact_nodes_quorum
 }
