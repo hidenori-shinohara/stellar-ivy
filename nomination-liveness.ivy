@@ -102,7 +102,6 @@ object protocol = {
                     is_quorum(Q) &
                     member(v, Q) &
                     forall V . member(V,Q) -> received_accept_nominate(v, V, x)) {
-
                 confirmed_nominate(v, x) := true;
                 has_candidate_value(v) := true;
             };
@@ -110,7 +109,6 @@ object protocol = {
 
 
         # va heard that nb voted for nominate(x).
-        # This may make it possible for va to accept nominate(x).
         action receive_vote_nominate(va:node, vb:node, x:value) = {
 
             # This action is possible if and only if nb has voted for nominate(v).
@@ -138,17 +136,13 @@ object protocol = {
                     is_quorum(Q) &
                     member(va, Q) &
                     forall V . member(V,Q) -> received_accept_nominate(va, V, x)) {
-
                 confirmed_nominate(va, x) := true;
                 has_candidate_value(va) := true;
             };
         }
 
-        # va heard that nb voted for nominate(x).
+        # va heard that vb voted for nominate(x).
         # This may make it possible for va to accept or confirm nominate(x).
-        # In SCP-safety.ivy, it checks the confirm stuff first.
-        # But I thought that it'd make more sense to accept first because
-        # I might be able to both accept and confirm nominate(x).
         action receive_accept_nominate(va:node, vb:node, x:value) = {
 
             # This action is possible if and only if nb has voted for nominate(x).
@@ -170,8 +164,8 @@ object protocol = {
                 received_accept_nominate(va, va, x) := true;
             };
 
-            # If there exists a v-blocking set in which every member
-            # accepted nominate(x), then v can accept it.
+            # If there exists a va-blocking set in which every member
+            # accepted nominate(x), then va can accept it.
             if (exists S .
                     blocks_slices(S, va) &
                     (forall V . member(V, S) -> received_accept_nominate(va, V, x))) {
@@ -198,7 +192,7 @@ object protocol = {
     }
     isolate liveness = {
         # Here a few (relatively trivial) conjectures.
-        # IVy keeps coming up with a CTI that violates them.
+        # These are added here because IVy keeps coming up with a CTI that violates them.
         conjecture received_vote_nominate(Va, Vb, X) -> voted_nominate(Vb, X)
         conjecture voted_nominate(V, X) -> received_vote_nominate(V, V, X)
         conjecture accepted_nominate(V, X) -> received_accept_nominate(V, V, X)
@@ -217,14 +211,14 @@ object protocol = {
         # *eventually* produce a candidate value.
         #
         # We will do so without using temporal logic.
-        # Let X be a value and V be an intertwined node.
-        # Suppose that V has voted for X.
+        # Let x be a value and v be an intertwined node.
+        # Suppose that v has voted for nominate(x).
         # At any point, at least one of the following statements must be true:
-        # 1) V has confirmed nominate(X), OR
-        # 2) There exists a message about X that has not been delivered.
+        # 1) v has confirmed nominate(x), OR
+        # 2) There exists a message about x that has not been delivered.
         #
         # In other words, what I'm trying to prove here is
-        # "If V votes for X, once all messages about X have been delivered, V will accept X."
+        # "If v votes for x, once all messages about x have been delivered, v will accept x."
         #
         # Unfortunately, there is something wrong with the code,
         # or IVy can't prove this directly. (or both!)
