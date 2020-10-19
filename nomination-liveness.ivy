@@ -223,8 +223,8 @@ object protocol = {
         #
         # Unfortunately, there is something wrong with the code,
         # or IVy can't prove this directly. (or both!)
-        # Run "ivy_check complete=fo diagnose=true nomination-liveness.ivy" to see a CTI.
-        # Alternatively, see output.txt.
+        # When I run "ivy_check complete=fo diagnose=true nomination-liveness.ivy"
+        # it stops at this conjecture.
         conjecture [eventually_at_least_one_candidate_value]
             intact(V) & voted_nominate(V, X)
                 -> (confirmed_nominate(V, X) |
