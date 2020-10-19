@@ -10,6 +10,7 @@ relation intact(V:node)
 
 # Intact nodes are intertwined
 axiom [intact_implies_intertwined] intact(V) -> intertwined(V)
+axiom [all_nodes_are_intact] intact(V)
 
 # Intertwined nodes are well-behaved
 axiom [intertwined_implies_well_behaved] intertwined(V) -> well_behaved(V)
@@ -62,6 +63,45 @@ object protocol = {
             received_accept_nominate(V1, V2, X) := false;
         }
 
+        action try_accepting_condition_1(v:node, x:value) = {
+            # If v is a member of a quorum in which
+            # everyone either voted for or accepted nominate(x),
+            # then v can accept it.
+            if (exists Q .
+                    is_quorum(Q) &
+                    member(v, Q) &
+                    (forall V . member(V,Q) ->
+                        (received_vote_nominate(v, V, x) |
+                         received_accept_nominate(v, V, x)))) {
+                accepted_nominate(v, x) := true;
+                received_accept_nominate(v, v, x) := true;
+            };
+        }
+
+        action try_accepting_condition_2(v:node, x:value) = {
+            # If there exists a v-blocking set in which every member
+            # accepted nominate(x), then v can accept it.
+            if (exists S .
+                    blocks_slices(S, v) &
+                    (forall V . member(V, S) -> received_accept_nominate(v, V, x))) {
+                accepted_nominate(v, x) := true;
+                received_accept_nominate(v, v, x) := true;
+            };
+        }
+
+        action try_confirming(v:node, x:value) = {
+            # If v is a member of a quorum in which everyone accepted nominate(x),
+            # then v can confirm it.
+            if (exists Q .
+                    is_quorum(Q) &
+                    member(v, Q) &
+                    forall V . member(V,Q) -> received_accept_nominate(v, V, x)) {
+
+                confirmed_nominate(v, x) := true;
+                has_candidate_value(v) := true;
+            }
+        }
+
         # n votes for nominate(x).
         action vote_nominate(v:node, x:value) = {
 
@@ -73,10 +113,8 @@ object protocol = {
             voted_nominate(v, x) := true;
             received_vote_nominate(v, v, x) := true;
 
-            # TODO
-            # So, if {v} is a quorum, this will let v accept & confirm nominate(x).
-            # Take care of that issue.
-            # Unfortunately, IVy doesn't seem to support recursive definitions.
+            call try_accepting_condition_1(v, x);
+            call try_confirming(v, x);
         }
 
 
@@ -90,14 +128,8 @@ object protocol = {
             # Bookkeeping.
             received_vote_nominate(va, vb, x) := true;
 
-            # Check if va can accept nominate(v).
-            if (exists Q . is_quorum(Q) & member(va, Q) &
-                    (forall V . V ~= va & member(V,Q) ->
-                     (received_vote_nominate(va, V, x) |
-                      received_accept_nominate(va, V, x)))) {
-                accepted_nominate(va, x) := true;
-                received_accept_nominate(va, va, x) := true;
-            };
+            call try_accepting_condition_1(va, x);
+            call try_confirming(va, x);
         }
 
         # va heard that nb voted for nominate(x).
@@ -113,38 +145,9 @@ object protocol = {
             # Bookkeeping.
             received_accept_nominate(va, vb, x) := true;
 
-            # If va is a member of a quorum in which
-            # everyone either voted for or accepted nominate(x),
-            # then va can accept it.
-            if (exists Q .
-                    is_quorum(Q) &
-                    member(va,Q) &
-                    (forall V . V ~= va & member(V,Q) ->
-                        (received_vote_nominate(va, V, x) |
-                         received_accept_nominate(va, V, x)))) {
-                accepted_nominate(va, x) := true;
-                received_accept_nominate(va, va, x) := true;
-            };
-
-            # If there exists a na-blocking set in which every member
-            # accepted nominate(x), then va can accept it.
-            if (exists S .
-                    blocks_slices(S, va) &
-                    (forall V . member(V, S) -> received_accept_nominate(va, V, x))) {
-                accepted_nominate(va, x) := true;
-                received_accept_nominate(va, va, x) := true;
-            };
-
-            # If va is a member of a quorum in which everyone accepted nominate(x),
-            # then va can confirm it.
-            if (exists Q .
-                    is_quorum(Q) &
-                    member(va, Q) &
-                    forall V . member(V,Q) -> received_accept_nominate(va, V, x)) {
-
-                confirmed_nominate(va, x) := true;
-                has_candidate_value(va) := true;
-            }
+            call try_accepting_condition_1(va, x);
+            call try_accepting_condition_2(va, x);
+            call try_confirming(va, x);
         }
 
         # TODO: Create a Byzantine step
@@ -189,5 +192,6 @@ object protocol = {
            intertwined_implies_well_behaved,
            intact_implies_intertwined,
            intact_node_v_blocking,
-           set_of_intact_nodes_quorum
+           set_of_intact_nodes_quorum,
+           all_nodes_are_intact
 }
