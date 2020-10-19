@@ -13,7 +13,8 @@ Isolate protocol.liveness:
         nomination-liveness.ivy: line 201: protocol.liveness.conj4
         nomination-liveness.ivy: line 202: protocol.liveness.conj5
         nomination-liveness.ivy: line 203: protocol.liveness.conj6
-        nomination-liveness.ivy: line 222: protocol.liveness.eventually_at_least_one_candidate_value
+        nomination-liveness.ivy: line 204: protocol.liveness.conj7
+        nomination-liveness.ivy: line 205: protocol.liveness.conj8
 
     The following action implementations are present:
         nomination-liveness.ivy: line 152: implementation of protocol.actions.receive_accept_nominate
@@ -27,7 +28,8 @@ Isolate protocol.liveness:
         nomination-liveness.ivy: line 201: protocol.liveness.conj4 ... PASS
         nomination-liveness.ivy: line 202: protocol.liveness.conj5 ... PASS
         nomination-liveness.ivy: line 203: protocol.liveness.conj6 ... PASS
-        nomination-liveness.ivy: line 222: protocol.liveness.eventually_at_least_one_candidate_value ... PASS
+        nomination-liveness.ivy: line 204: protocol.liveness.conj7 ... PASS
+        nomination-liveness.ivy: line 205: protocol.liveness.conj8 ... PASS
 
     Any assertions in initializers must be checked ... PASS
 
@@ -36,53 +38,87 @@ Isolate protocol.liveness:
             nomination-liveness.ivy: line 201: protocol.liveness.conj4 ... PASS
             nomination-liveness.ivy: line 202: protocol.liveness.conj5 ... PASS
             nomination-liveness.ivy: line 203: protocol.liveness.conj6 ... PASS
-            nomination-liveness.ivy: line 222: protocol.liveness.eventually_at_least_one_candidate_value ... FAIL
+            nomination-liveness.ivy: line 204: protocol.liveness.conj7 ... PASS
+            nomination-liveness.ivy: line 205: protocol.liveness.conj8 ... FAIL
 searching for a small model... done
 [
-    protocol.voted_nominate(0,0) = true
+    protocol.voted_nominate(0,0) = false
     protocol.voted_nominate(1,0) = false
+    protocol.voted_nominate(2,0) = false
     @X = 0
     intertwined(0) = true
     intertwined(1) = true
-    blocks_slices(0,0) = false
-    blocks_slices(0,1) = false
-    protocol.received_vote_nominate(0,0,0) = true
-    protocol.received_vote_nominate(1,0,0) = true
+    intertwined(2) = true
+    blocks_slices(0,0) = true
+    blocks_slices(0,1) = true
+    blocks_slices(0,2) = true
+    blocks_slices(1,0) = true
+    blocks_slices(1,1) = true
+    blocks_slices(1,2) = true
+    protocol.received_vote_nominate(0,0,0) = false
     protocol.received_vote_nominate(0,1,0) = false
+    protocol.received_vote_nominate(0,2,0) = false
+    protocol.received_vote_nominate(1,0,0) = false
     protocol.received_vote_nominate(1,1,0) = false
+    protocol.received_vote_nominate(1,2,0) = false
+    protocol.received_vote_nominate(2,0,0) = false
+    protocol.received_vote_nominate(2,1,0) = false
+    protocol.received_vote_nominate(2,2,0) = false
     is_quorum(0) = true
-    member(0,0) = true
+    is_quorum(1) = true
+    member(0,1) = true
     member(1,0) = true
-    @V = 0
+    member(1,1) = true
+    member(2,1) = true
+    member(0,0) = false
+    member(2,0) = false
     well_behaved(0) = true
     well_behaved(1) = true
+    well_behaved(2) = true
     intact(0) = true
     intact(1) = true
+    intact(2) = true
+    @Va = 2
     protocol.accepted_nominate(0,0) = true
-    protocol.accepted_nominate(1,0) = false
-    protocol.received_accept_nominate(0,0,0) = false
-    protocol.received_accept_nominate(0,1,0) = false
-    protocol.received_accept_nominate(1,0,0) = false
-    protocol.received_accept_nominate(1,1,0) = false
+    protocol.accepted_nominate(1,0) = true
+    protocol.accepted_nominate(2,0) = false
+    protocol.received_accept_nominate(0,0,0) = true
+    protocol.received_accept_nominate(0,1,0) = true
+    protocol.received_accept_nominate(0,2,0) = true
+    protocol.received_accept_nominate(1,0,0) = true
+    protocol.received_accept_nominate(1,1,0) = true
+    protocol.received_accept_nominate(1,2,0) = true
+    protocol.received_accept_nominate(2,1,0) = true
+    protocol.received_accept_nominate(2,0,0) = false
+    protocol.received_accept_nominate(2,2,0) = false
     protocol.confirmed_nominate(0,0) = false
     protocol.confirmed_nominate(1,0) = false
+    protocol.confirmed_nominate(2,0) = false
     protocol.has_candidate_value(0) = false
     protocol.has_candidate_value(1) = false
+    protocol.has_candidate_value(2) = false
 ]
 call protocol.actions.receive_accept_nominate
 
 {
     [
-        fml:vb = 0
+        fml:vb = 1
         fml:x = 0
-        fml:va = 1
+        fml:va = 2
     ]
     nomination-liveness.ivy: line 155: assume protocol.accepted_nominate(fml:vb,fml:x)
 
     nomination-liveness.ivy: line 158: protocol.received_accept_nominate(fml:va,fml:vb,fml:x) := true
 
+    nomination-liveness.ivy: line 178: protocol.accepted_nominate(fml:va,fml:x) := true
+
     [
-        protocol.received_accept_nominate(1,0,0) = true
+        protocol.accepted_nominate(2,0) = true
+    ]
+    nomination-liveness.ivy: line 179: protocol.received_accept_nominate(fml:va,fml:va,fml:x) := true
+
+    [
+        protocol.received_accept_nominate(2,2,0) = true
     ]
 }
 
