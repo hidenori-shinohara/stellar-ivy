@@ -209,10 +209,9 @@ object protocol = {
                         (forall V . member(V,Q) ->
                             (received_vote_nominate(Va, V, X) |
                              received_accept_nominate(Va, V, X)))) |
-                (exists Q .
-                        is_quorum(Q) &
-                        member(Va, Q) &
-                        forall V . member(V,Q) -> received_accept_nominate(Va, V, X))
+                (exists S .
+                    blocks_slices(S, Va) &
+                    (forall V . member(V, S) -> received_accept_nominate(Va, V, X)))
 
         # Here, we prove that the set of intact nodes will
         # *eventually* produce a candidate value.
