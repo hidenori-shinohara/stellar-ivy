@@ -1,0 +1,89 @@
+
+Isolate protocol.liveness:
+
+    The following properties are assumed as axioms:
+        nomination-liveness.ivy: intact_implies_intertwined
+        nomination-liveness.ivy: all_nodes_are_intact
+        nomination-liveness.ivy: intertwined_implies_well_behaved
+        nomination-liveness.ivy: intact_node_v_blocking
+        nomination-liveness.ivy: set_of_intact_nodes_quorum
+        nomination-liveness.ivy: line 27: qi_intertwined.prop1
+
+    The inductive invariant consists of the following conjectures:
+        nomination-liveness.ivy: line 201: protocol.liveness.conj4
+        nomination-liveness.ivy: line 202: protocol.liveness.conj5
+        nomination-liveness.ivy: line 203: protocol.liveness.conj6
+        nomination-liveness.ivy: line 222: protocol.liveness.eventually_at_least_one_candidate_value
+
+    The following action implementations are present:
+        nomination-liveness.ivy: line 152: implementation of protocol.actions.receive_accept_nominate
+        nomination-liveness.ivy: line 114: implementation of protocol.actions.receive_vote_nominate
+        nomination-liveness.ivy: line 67: implementation of protocol.actions.vote_nominate
+
+    The following initializers are present:
+        nomination-liveness.ivy: line 57: protocol.actions.init[after3]
+
+    Initialization must establish the invariant
+        nomination-liveness.ivy: line 201: protocol.liveness.conj4 ... PASS
+        nomination-liveness.ivy: line 202: protocol.liveness.conj5 ... PASS
+        nomination-liveness.ivy: line 203: protocol.liveness.conj6 ... PASS
+        nomination-liveness.ivy: line 222: protocol.liveness.eventually_at_least_one_candidate_value ... PASS
+
+    Any assertions in initializers must be checked ... PASS
+
+    The following set of external actions must preserve the invariant:
+        (internal) ext:protocol.actions.receive_accept_nominate
+            nomination-liveness.ivy: line 201: protocol.liveness.conj4 ... PASS
+            nomination-liveness.ivy: line 202: protocol.liveness.conj5 ... PASS
+            nomination-liveness.ivy: line 203: protocol.liveness.conj6 ... PASS
+            nomination-liveness.ivy: line 222: protocol.liveness.eventually_at_least_one_candidate_value ... FAIL
+searching for a small model... done
+[
+    protocol.voted_nominate(0,0) = true
+    protocol.voted_nominate(1,0) = false
+    @X = 0
+    intertwined(0) = true
+    intertwined(1) = true
+    blocks_slices(0,0) = false
+    blocks_slices(0,1) = false
+    protocol.received_vote_nominate(0,0,0) = true
+    protocol.received_vote_nominate(1,0,0) = true
+    protocol.received_vote_nominate(0,1,0) = false
+    protocol.received_vote_nominate(1,1,0) = false
+    is_quorum(0) = true
+    member(0,0) = true
+    member(1,0) = true
+    @V = 0
+    well_behaved(0) = true
+    well_behaved(1) = true
+    intact(0) = true
+    intact(1) = true
+    protocol.accepted_nominate(0,0) = true
+    protocol.accepted_nominate(1,0) = false
+    protocol.received_accept_nominate(0,0,0) = false
+    protocol.received_accept_nominate(0,1,0) = false
+    protocol.received_accept_nominate(1,0,0) = false
+    protocol.received_accept_nominate(1,1,0) = false
+    protocol.confirmed_nominate(0,0) = false
+    protocol.confirmed_nominate(1,0) = false
+    protocol.has_candidate_value(0) = false
+    protocol.has_candidate_value(1) = false
+]
+call protocol.actions.receive_accept_nominate
+
+{
+    [
+        fml:vb = 0
+        fml:x = 0
+        fml:va = 1
+    ]
+    nomination-liveness.ivy: line 155: assume protocol.accepted_nominate(fml:vb,fml:x)
+
+    nomination-liveness.ivy: line 158: protocol.received_accept_nominate(fml:va,fml:vb,fml:x) := true
+
+    [
+        protocol.received_accept_nominate(1,0,0) = true
+    ]
+}
+
+

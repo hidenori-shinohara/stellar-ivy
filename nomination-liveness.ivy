@@ -219,15 +219,15 @@ object protocol = {
         # or IVy can't prove this directly. (or both!)
         # Run "ivy_check diagnose=true nomination-liveness.ivy" to see a CTI.
         # Alternatively, see output.txt.
-#        conjecture [eventually_at_least_one_candidate_value]
-#            intact(V) & voted_nominate(V, X)
-#                -> (confirmed_nominate(V, X) |
-#                    (exists V1, V2 . V1 ~= V2 &
-#                                     voted_nominate(V2, X) &
-#                                     ~received_vote_nominate(V1, V2, X)) |
-#                    (exists V1, V2 . V1 ~= V2 &
-#                                     accepted_nominate(V2, X) &
-#                                     ~received_accept_nominate(V1, V2, X)))
+        conjecture [eventually_at_least_one_candidate_value]
+            intact(V) & voted_nominate(V, X)
+                -> (confirmed_nominate(V, X) |
+                    (exists V1, V2 . V1 ~= V2 &
+                                     voted_nominate(V2, X) &
+                                     ~received_vote_nominate(V1, V2, X)) |
+                    (exists V1, V2 . V1 ~= V2 &
+                                     accepted_nominate(V2, X) &
+                                     ~received_accept_nominate(V1, V2, X)))
     } with actions,
            qi_intertwined,
            qi_intertwined,
