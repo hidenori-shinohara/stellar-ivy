@@ -208,6 +208,7 @@ object protocol = {
                     blocks_slices(S, Va) &
                     (forall Vb . member(Vb, S) -> received_accept_nominate(Va, Vb, X)))
 
+        conjecture intact(V)
         # Here, we prove that the set of intact nodes will
         # *eventually* produce a candidate value.
         #
@@ -219,7 +220,8 @@ object protocol = {
         # 2) There exists a message about x that has not been delivered.
         #
         # In other words, what I'm trying to prove here is
-        # "If v votes for x, once all messages about x have been delivered, v will accept x."
+        # "If v votes for nominate(x), once all messages about nominate(x) have been delivered,
+        # v will confirm nominate(x)."
         #
         # Unfortunately, there is something wrong with the code,
         # or IVy can't prove this directly. (or both!)
