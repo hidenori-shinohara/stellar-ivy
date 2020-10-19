@@ -194,6 +194,7 @@ object protocol = {
         # Here a few (relatively trivial) conjectures.
         # These are added here because IVy keeps coming up with a CTI that violates them.
         conjecture received_vote_nominate(Va, Vb, X) -> voted_nominate(Vb, X)
+        conjecture received_accept_nominate(Va, Vb, X) -> accepted_nominate(Vb, X)
         conjecture voted_nominate(V, X) -> received_vote_nominate(V, V, X)
         conjecture accepted_nominate(V, X) -> received_accept_nominate(V, V, X)
         conjecture forall Va, X. accepted_nominate(Va, X) ->
