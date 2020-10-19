@@ -197,7 +197,8 @@ object protocol = {
         export receive_accept_nominate
     }
     isolate liveness = {
-        # For some reason, IVy can't prove this even though this seems fairly straightforward...
+        # Here a few (relatively trivial) conjectures.
+        # IVy keeps coming up with a CTI that violates them.
         conjecture received_vote_nominate(Va, Vb, X) -> voted_nominate(Vb, X)
         conjecture voted_nominate(V, X) -> received_vote_nominate(V, V, X)
         conjecture accepted_nominate(V, X) -> received_accept_nominate(V, V, X)
