@@ -63,7 +63,17 @@ object protocol = {
             received_accept_nominate(V1, V2, X) := false;
         }
 
-        action try_accepting_condition_1(v:node, x:value) = {
+        # n votes for nominate(x).
+        action vote_nominate(v:node, x:value) = {
+
+            # n is not allowed to vote for nominate(x)
+            # if it already has a candidate value.
+            assume ~has_candidate_value(v);
+
+            # bookkeeping.
+            voted_nominate(v, x) := true;
+            received_vote_nominate(v, v, x) := true;
+
             # If v is a member of a quorum in which
             # everyone either voted for or accepted nominate(x),
             # then v can accept it.
@@ -76,9 +86,7 @@ object protocol = {
                 accepted_nominate(v, x) := true;
                 received_accept_nominate(v, v, x) := true;
             };
-        }
 
-        action try_accepting_condition_2(v:node, x:value) = {
             # If there exists a v-blocking set in which every member
             # accepted nominate(x), then v can accept it.
             if (exists S .
@@ -87,9 +95,7 @@ object protocol = {
                 accepted_nominate(v, x) := true;
                 received_accept_nominate(v, v, x) := true;
             };
-        }
 
-        action try_confirming(v:node, x:value) = {
             # If v is a member of a quorum in which everyone accepted nominate(x),
             # then v can confirm it.
             if (exists Q .
@@ -99,22 +105,7 @@ object protocol = {
 
                 confirmed_nominate(v, x) := true;
                 has_candidate_value(v) := true;
-            }
-        }
-
-        # n votes for nominate(x).
-        action vote_nominate(v:node, x:value) = {
-
-            # n is not allowed to vote for nominate(x)
-            # if it already has a candidate value.
-            assume ~has_candidate_value(v);
-
-            # bookkeeping.
-            voted_nominate(v, x) := true;
-            received_vote_nominate(v, v, x) := true;
-
-            call try_accepting_condition_1(v, x);
-            call try_confirming(v, x);
+            };
         }
 
 
@@ -128,8 +119,29 @@ object protocol = {
             # Bookkeeping.
             received_vote_nominate(va, vb, x) := true;
 
-            call try_accepting_condition_1(va, x);
-            call try_confirming(va, x);
+            # If va is a member of a quorum in which
+            # evaeryone either voted for or accepted nominate(x),
+            # then va can accept it.
+            if (exists Q .
+                    is_quorum(Q) &
+                    member(va, Q) &
+                    (forall V . member(V,Q) ->
+                        (received_vote_nominate(va, V, x) |
+                         received_accept_nominate(va, V, x)))) {
+                accepted_nominate(va, x) := true;
+                received_accept_nominate(va, va, x) := true;
+            };
+
+            # If v is a member of a quorum in which everyone accepted nominate(x),
+            # then va can confirm it.
+            if (exists Q .
+                    is_quorum(Q) &
+                    member(va, Q) &
+                    forall V . member(V,Q) -> received_accept_nominate(va, V, x)) {
+
+                confirmed_nominate(va, x) := true;
+                has_candidate_value(va) := true;
+            };
         }
 
         # va heard that nb voted for nominate(x).
@@ -145,9 +157,38 @@ object protocol = {
             # Bookkeeping.
             received_accept_nominate(va, vb, x) := true;
 
-            call try_accepting_condition_1(va, x);
-            call try_accepting_condition_2(va, x);
-            call try_confirming(va, x);
+            # If va is a member of a quorum in which
+            # everyone either voted for or accepted nominate(x),
+            # then va can accept it.
+            if (exists Q .
+                    is_quorum(Q) &
+                    member(va, Q) &
+                    (forall V . member(V,Q) ->
+                        (received_vote_nominate(va, V, x) |
+                         received_accept_nominate(va, V, x)))) {
+                accepted_nominate(va, x) := true;
+                received_accept_nominate(va, va, x) := true;
+            };
+
+            # If there exists a v-blocking set in which every member
+            # accepted nominate(x), then v can accept it.
+            if (exists S .
+                    blocks_slices(S, va) &
+                    (forall V . member(V, S) -> received_accept_nominate(va, V, x))) {
+                accepted_nominate(va, x) := true;
+                received_accept_nominate(va, va, x) := true;
+            };
+
+            # If va is a member of a quorum in which everyone accepted nominate(x),
+            # then va can confirm it.
+            if (exists Q .
+                    is_quorum(Q) &
+                    member(va, Q) &
+                    forall V . member(V,Q) -> received_accept_nominate(va, V, x)) {
+
+                confirmed_nominate(va, x) := true;
+                has_candidate_value(va) := true;
+            };
         }
 
         # TODO: Create a Byzantine step
@@ -155,10 +196,10 @@ object protocol = {
         export receive_vote_nominate
         export receive_accept_nominate
     }
-
     isolate liveness = {
         # For some reason, IVy can't prove this even though this seems fairly straightforward...
         conjecture received_vote_nominate(Va, Vb, X) -> voted_nominate(Vb, X)
+        conjecture voted_nominate(V, X) -> received_vote_nominate(V, V, X)
         conjecture voted_nominate(V, X) -> received_vote_nominate(V, V, X)
 
         # Here, we prove that the set of intact nodes will
