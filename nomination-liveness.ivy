@@ -200,18 +200,17 @@ object protocol = {
         # For some reason, IVy can't prove this even though this seems fairly straightforward...
         conjecture received_vote_nominate(Va, Vb, X) -> voted_nominate(Vb, X)
         conjecture voted_nominate(V, X) -> received_vote_nominate(V, V, X)
-        conjecture voted_nominate(V, X) -> received_vote_nominate(V, V, X)
-        conjecture voted_nominate(V, X) -> received_vote_nominate(V, V, X)
+        conjecture accepted_nominate(V, X) -> received_accept_nominate(V, V, X)
         conjecture forall Va, X. accepted_nominate(Va, X) ->
                 (exists Q .
                         is_quorum(Q) &
                         member(Va, Q) &
-                        (forall V . member(V,Q) ->
-                            (received_vote_nominate(Va, V, X) |
-                             received_accept_nominate(Va, V, X)))) |
+                        (forall Vb . member(Vb, Q) ->
+                            (received_vote_nominate(Va, Vb, X) |
+                             received_accept_nominate(Va, Vb, X)))) |
                 (exists S .
                     blocks_slices(S, Va) &
-                    (forall V . member(V, S) -> received_accept_nominate(Va, V, X)))
+                    (forall Vb . member(Vb, S) -> received_accept_nominate(Va, Vb, X)))
 
         # Here, we prove that the set of intact nodes will
         # *eventually* produce a candidate value.
@@ -230,18 +229,16 @@ object protocol = {
         # or IVy can't prove this directly. (or both!)
         # Run "ivy_check diagnose=true nomination-liveness.ivy" to see a CTI.
         # Alternatively, see output.txt.
-#        conjecture [eventually_at_least_one_candidate_value]
-#            intact(V) & voted_nominate(V, X)
-#                -> (confirmed_nominate(V, X) |
-#                    (exists V1, V2 . V1 ~= V2 &
-#                                     voted_nominate(V2, X) &
-#                                     ~received_vote_nominate(V1, V2, X)) |
-#                    (exists V1, V2 . V1 ~= V2 &
-#                                     accepted_nominate(V2, X) &
-#                                     ~received_accept_nominate(V1, V2, X)))
+        conjecture [eventually_at_least_one_candidate_value]
+            intact(V) & voted_nominate(V, X)
+                -> (confirmed_nominate(V, X) |
+                    (exists V1, V2 . voted_nominate(V2, X) &
+                                     ~received_vote_nominate(V1, V2, X)) |
+                    (exists V1, V2 . accepted_nominate(V2, X) &
+                                     ~received_accept_nominate(V1, V2, X)))
     } with actions,
            qi_intertwined,
-           qi_intertwined,
+           qi_intact,
            intertwined_implies_well_behaved,
            intact_implies_intertwined,
            intact_node_v_blocking,
