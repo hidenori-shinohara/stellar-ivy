@@ -158,7 +158,8 @@ object protocol = {
 
     isolate liveness = {
         # For some reason, IVy can't prove this even though this seems fairly straightforward...
-        conjecture received_vote_nominate(Va, Vb, X) -> voted_nominate(Va, X)
+        invariant received_vote_nominate(Va, Vb, X) -> voted_nominate(Va, X)
+        invariant voted_nominate(V, X) -> received_vote_nominate(V, V, X)
 
         # Here, we prove that the set of intact nodes will
         # *eventually* produce a candidate value.
