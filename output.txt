@@ -11,36 +11,36 @@ Isolate protocol.liveness:
         nomination-liveness.ivy: line 32: qi_intact.prop2
 
     The inductive invariant consists of the following conjectures:
-        nomination-liveness.ivy: line 201: protocol.liveness.conj4
-        nomination-liveness.ivy: line 202: protocol.liveness.conj5
-        nomination-liveness.ivy: line 203: protocol.liveness.conj6
-        nomination-liveness.ivy: line 204: protocol.liveness.conj7
-        nomination-liveness.ivy: line 232: protocol.liveness.eventually_at_least_one_candidate_value
+        nomination-liveness.ivy: line 196: protocol.liveness.conj4
+        nomination-liveness.ivy: line 197: protocol.liveness.conj5
+        nomination-liveness.ivy: line 198: protocol.liveness.conj6
+        nomination-liveness.ivy: line 199: protocol.liveness.conj7
+        nomination-liveness.ivy: line 227: protocol.liveness.eventually_at_least_one_candidate_value
 
     The following action implementations are present:
-        nomination-liveness.ivy: line 152: implementation of protocol.actions.receive_accept_nominate
-        nomination-liveness.ivy: line 114: implementation of protocol.actions.receive_vote_nominate
+        nomination-liveness.ivy: line 146: implementation of protocol.actions.receive_accept_nominate
+        nomination-liveness.ivy: line 112: implementation of protocol.actions.receive_vote_nominate
         nomination-liveness.ivy: line 67: implementation of protocol.actions.vote_nominate
 
     The following initializers are present:
         nomination-liveness.ivy: line 57: protocol.actions.init[after3]
 
     Initialization must establish the invariant
-        nomination-liveness.ivy: line 201: protocol.liveness.conj4 ... PASS
-        nomination-liveness.ivy: line 202: protocol.liveness.conj5 ... PASS
-        nomination-liveness.ivy: line 203: protocol.liveness.conj6 ... PASS
-        nomination-liveness.ivy: line 204: protocol.liveness.conj7 ... PASS
-        nomination-liveness.ivy: line 232: protocol.liveness.eventually_at_least_one_candidate_value ... PASS
+        nomination-liveness.ivy: line 196: protocol.liveness.conj4 ... PASS
+        nomination-liveness.ivy: line 197: protocol.liveness.conj5 ... PASS
+        nomination-liveness.ivy: line 198: protocol.liveness.conj6 ... PASS
+        nomination-liveness.ivy: line 199: protocol.liveness.conj7 ... PASS
+        nomination-liveness.ivy: line 227: protocol.liveness.eventually_at_least_one_candidate_value ... PASS
 
     Any assertions in initializers must be checked ... PASS
 
     The following set of external actions must preserve the invariant:
         (internal) ext:protocol.actions.receive_accept_nominate
-            nomination-liveness.ivy: line 201: protocol.liveness.conj4 ... PASS
-            nomination-liveness.ivy: line 202: protocol.liveness.conj5 ... PASS
-            nomination-liveness.ivy: line 203: protocol.liveness.conj6 ... PASS
-            nomination-liveness.ivy: line 204: protocol.liveness.conj7 ... PASS
-            nomination-liveness.ivy: line 232: protocol.liveness.eventually_at_least_one_candidate_value ... FAIL
+            nomination-liveness.ivy: line 196: protocol.liveness.conj4 ... PASS
+            nomination-liveness.ivy: line 197: protocol.liveness.conj5 ... PASS
+            nomination-liveness.ivy: line 198: protocol.liveness.conj6 ... PASS
+            nomination-liveness.ivy: line 199: protocol.liveness.conj7 ... PASS
+            nomination-liveness.ivy: line 227: protocol.liveness.eventually_at_least_one_candidate_value ... FAIL
 searching for a small model... done
 [
     protocol.voted_nominate(1,0) = true
@@ -81,9 +81,9 @@ call protocol.actions.receive_accept_nominate
         fml:x = 0
         fml:va = 0
     ]
-    nomination-liveness.ivy: line 155: assume protocol.accepted_nominate(fml:vb,fml:x)
+    nomination-liveness.ivy: line 149: assume protocol.accepted_nominate(fml:vb,fml:x)
 
-    nomination-liveness.ivy: line 158: protocol.received_accept_nominate(fml:va,fml:vb,fml:x) := true
+    nomination-liveness.ivy: line 152: protocol.received_accept_nominate(fml:va,fml:vb,fml:x) := true
 
     [
         protocol.received_accept_nominate(0,1,0) = true
