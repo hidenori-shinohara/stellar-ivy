@@ -1,5 +1,6 @@
 #lang ivy1.7
 
+# A module to deal with basic set theory stuff.
 module set(t) = {
     type this
     relation member(E:t,S:this)
@@ -29,4 +30,3 @@ module set(t) = {
     individual universe : this
     axiom forall E. member(E,universe)
 }
-

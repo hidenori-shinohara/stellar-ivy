@@ -4,8 +4,14 @@ module network(node, value) = {
     relation enqueued_vote(V:node.t, X:value)
     action enqueue_vote(v:node.t, x:value)
 
+    relation enqueued_accept(V:node.t, X:value)
+    action enqueue_accept(v:node.t, x:value)
+
     # This tells node a that node b voted for value x.
     action deliver_vote(a:node.t, b:node.t, x:value)
+
+    # This tells node a that node b accepted value x.
+    action deliver_accept(a:node.t, b:node.t, x:value)
 
 
     object spec = {
@@ -19,6 +25,7 @@ module network(node, value) = {
         after deliver_vote {
             assert a.received_vote(b, x);
         }
+        # TODO: accept
     }
 
     object impl = {
@@ -28,5 +35,6 @@ module network(node, value) = {
         implement deliver_vote {
             call a.receive_vote(b, x);
         }
+        # TODO: accept
     }
 }

@@ -13,17 +13,24 @@ module node(value, id) = {
     relation received_vote(V:t, V:t, X:value)
     relation is_quorum_slice(V:t, S:nset)
 
+    # TODO: add other necessary relations such as received_accept.
+
+    # We will use it as v.vote_for(x).
     action vote_for(v:t, x:value)
     action accept(v:t, x:value)
+    action confirm(v:t, x:value)
 
     # Receive a vote for statement x from node v.
     action receive_vote(v:t, w:t, x:value)
+    action receive_accept(v:t, w:t, x:value)
 
+    # Define quorums.
     relation is_quorum(V:t, S:nset)
     definition is_quorum(V, S) =
         nset.member(V, S) &
         (forall W . nset.member(W, S) -> (exists T . is_quorum_slice(W, T) & nset.subset(T, S)))
 
+    # Specifications.
     object spec = {
         before vote_for {
             assert ~v.has_candidate_value;
@@ -39,6 +46,7 @@ module node(value, id) = {
         }
     }
 
+    # Implementation
     object impl = {
         implement vote_for {
             v.voted_for(x) := true;
@@ -55,5 +63,7 @@ module node(value, id) = {
             v.received_vote(w, x) := true;
             # Todo: Finish this.
         }
+
+        # Implement the other actions.
     }
 }
