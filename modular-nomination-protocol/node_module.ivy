@@ -1,0 +1,52 @@
+#lang ivy1.7
+
+include simpleSet
+
+module node_module(value) = {
+    type t
+    instance nset : simpleSet(t)
+
+    relation voted_for(X:value)
+    relation accepted(X:value)
+    relation confirmed(X:value)
+    relation has_candidate_value
+    relation received_vote(V:t, X:value)
+    relation is_quorum_slice(S:nset)
+
+    action vote_for(x:value)
+    action accept(x:value)
+
+    # Receive a vote for statement x from node v.
+    action receive_vote(v:t, x:value)
+
+    # TODO: How should I implement the quorum stuff?
+
+    object spec = {
+        before vote_for {
+            assert ~has_candidate_value;
+        }
+
+        after receive_vote {
+#            assert v.voted_for(x);
+            assert received_vote(v, x);
+        }
+
+        before accept {
+            # Assert that one of the two conditions to accept has been met.
+        }
+    }
+
+    object impl = {
+        implement vote_for {
+            voted_for(x) := true;
+            # Todo: Add the if condition here
+            call accept(x);
+        }
+
+        implement receive_vote {
+            received_vote(v, x) := true;
+            # Todo: Add the if condition here
+            call accept(x);
+        }
+    }
+}

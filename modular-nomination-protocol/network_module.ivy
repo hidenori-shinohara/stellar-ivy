@@ -1,0 +1,31 @@
+#lang ivy1.7
+
+module network_module(node, value) = {
+    relation enqueued_vote(V:node.t, X:value)
+    action enqueue_vote(v:node.t, x:value)
+    # This tells node a that node b voted for value x.
+    action deliver_vote(a:node.t, b:node.t, x:value)
+
+
+    object spec = {
+        after enqueue_vote {
+            assert enqueued_vote(v, x);
+            call v.voted_for(x);
+        }
+        before deliver_vote {
+            assert enqueued_vote(b, x);
+        }
+        after deliver_vote {
+            assert a.received_vote(b, x);
+        }
+    }
+
+    object impl = {
+        implement enqueue_vote(v:node, x:value) {
+            enqueued_vote(v, x) := true;
+        }
+        implement deliver_vote {
+            call a.receive_vote(b, x);
+        }
+    }
+}

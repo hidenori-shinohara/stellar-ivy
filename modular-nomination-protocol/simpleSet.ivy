@@ -1,0 +1,31 @@
+#lang ivy1.7
+module simpleSet(t) = {
+    type this
+    relation member(E:t,S:this)
+
+    relation empty(S:this)
+    definition empty(S) = forall X. ~member(X, S)
+
+    ## Union
+    relation union(U:this, V:this, UV:this)
+    definition union(U, V, UV) = forall X. (member(X, U) | member(X, V)) <-> member(X, UV)
+
+    ## Intersection
+    relation intersection(U:this, V:this, UV:this)
+    definition intersection(U, V, UV) = forall X. (member(X, U) & member(X, V)) <-> member(X, UV)
+
+    ## Subset
+    relation subset(S:this, T:this)
+    definition subset(S, T) = forall N. member(N, S) -> member(N, T)
+
+    ## Subtract (S \ T = U)
+    relation subtract(S:this, T:this, U:this)
+    definition subtract(S, T, U) = forall N. (member(N, S) & ~member(N, T)) <-> member(N, U)
+
+    individual empty_set : this
+    axiom forall E. ~member(E,empty_set)
+
+    individual universe : this
+    axiom forall E. member(E,universe)
+}
+
