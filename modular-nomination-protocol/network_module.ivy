@@ -3,6 +3,7 @@
 module network_module(node, value) = {
     relation enqueued_vote(V:node.t, X:value)
     action enqueue_vote(v:node.t, x:value)
+
     # This tells node a that node b voted for value x.
     action deliver_vote(a:node.t, b:node.t, x:value)
 
