@@ -2,7 +2,7 @@
 
 include set
 
-module node_module(value, id) = {
+module node(value, id) = {
     type t
     instance nset : set(t)
 

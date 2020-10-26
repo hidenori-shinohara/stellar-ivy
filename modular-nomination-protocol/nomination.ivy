@@ -1,15 +1,15 @@
 #lang ivy1.7
 
-include node_module
-include network_module
+include node
+include network
 
 type value
 type id
 
-instance node : node_module(value, id)
-instance network : network_module(node, value)
+instance node_instance : node(value, id)
+instance network_instance : network(node_instance, value)
 
 # IVy will play with these two actions
 # and see if any invariants ever get violated.
-export network.enqueue_vote
-export network.deliver_vote
+export network_instance.enqueue_vote
+export network_instance.deliver_vote

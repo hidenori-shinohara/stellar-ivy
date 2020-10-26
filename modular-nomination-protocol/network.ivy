@@ -1,6 +1,6 @@
 #lang ivy1.7
 
-module network_module(node, value) = {
+module network(node, value) = {
     relation enqueued_vote(V:node.t, X:value)
     action enqueue_vote(v:node.t, x:value)
 
