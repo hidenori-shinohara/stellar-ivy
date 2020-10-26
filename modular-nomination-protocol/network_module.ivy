@@ -10,7 +10,7 @@ module network_module(node, value) = {
     object spec = {
         after enqueue_vote {
             assert enqueued_vote(v, x);
-            call v.voted_for(x);
+            call v.vote_for(x);
         }
         before deliver_vote {
             assert enqueued_vote(b, x);
@@ -21,7 +21,7 @@ module network_module(node, value) = {
     }
 
     object impl = {
-        implement enqueue_vote(v:node, x:value) {
+        implement enqueue_vote {
             enqueued_vote(v, x) := true;
         }
         implement deliver_vote {

@@ -2,33 +2,33 @@
 
 include simpleSet
 
-module node_module(value) = {
+module node_module(value, id) = {
     type t
     instance nset : simpleSet(t)
 
-    relation voted_for(X:value)
-    relation accepted(X:value)
-    relation confirmed(X:value)
-    relation has_candidate_value
-    relation received_vote(V:t, X:value)
-    relation is_quorum_slice(S:nset)
+    relation voted_for(V:t, X:value)
+    relation accepted(V:t, X:value)
+    relation confirmed(V:t, X:value)
+    relation has_candidate_value(V:t)
+    relation received_vote(V:t, V:t, X:value)
+    relation is_quorum_slice(V:t, S:nset)
 
-    action vote_for(x:value)
-    action accept(x:value)
+    action vote_for(v:t, x:value)
+    action accept(v:t, x:value)
 
     # Receive a vote for statement x from node v.
-    action receive_vote(v:t, x:value)
+    action receive_vote(v:t, w:t, x:value)
 
     # TODO: How should I implement the quorum stuff?
 
     object spec = {
         before vote_for {
-            assert ~has_candidate_value;
+            assert ~v.has_candidate_value;
         }
 
         after receive_vote {
-#            assert v.voted_for(x);
-            assert received_vote(v, x);
+            assert v.voted_for(x);
+            assert v.received_vote(w, x);
         }
 
         before accept {
@@ -38,15 +38,15 @@ module node_module(value) = {
 
     object impl = {
         implement vote_for {
-            voted_for(x) := true;
+            v.voted_for(x) := true;
             # Todo: Add the if condition here
-            call accept(x);
+            call v.accept(x);
         }
 
         implement receive_vote {
-            received_vote(v, x) := true;
+            v.received_vote(w, x) := true;
             # Todo: Add the if condition here
-            call accept(x);
+            call v.accept(x);
         }
     }
 }

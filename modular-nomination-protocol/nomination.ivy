@@ -6,5 +6,5 @@ include network_module
 type value
 type id
 
-instance node : node_module(value)
+instance node : node_module(value, id)
 instance network_module(node, value)
