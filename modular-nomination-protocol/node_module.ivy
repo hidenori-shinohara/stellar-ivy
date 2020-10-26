@@ -1,10 +1,10 @@
 #lang ivy1.7
 
-include simpleSet
+include set
 
 module node_module(value, id) = {
     type t
-    instance nset : simpleSet(t)
+    instance nset : set(t)
 
     relation voted_for(V:t, X:value)
     relation accepted(V:t, X:value)
