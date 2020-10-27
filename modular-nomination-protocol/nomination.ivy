@@ -3,19 +3,34 @@
 include node
 include network
 
-type value
-type id
+# The type of node identities (eg. public keys / IP addresses or such)
+type id_t
 
-instance node_instance : node(value, id)
-instance network_instance : network(node_instance, value)
+# The type of values being voted-on.
+type val_t
 
-# IVy will play with these two actions
-# and see if any invariants ever get violated.
-export network_instance.enqueue_vote
-export network_instance.deliver_vote
+# We have one network module for specifying network-wide properties.
+instance net : network(id_t, val_t)
+
+# And we have a _set_ of node modules, one per element of the opaque id_t type,
+# for specifying properties local to a single node. Each node gets told its own
+# identity via the second parameter ID.
+instance nodes(ID:id_t) : node(id_t, ID, val_t)
+
+# Allow IVy to cause any number of vote_for actions to initiate activities on
+# individual nodes.
+export nodes(ID).intf.vote_for
+
+# Additionally, any time the state of the world allows it (eg. there are messages
+# to receive in the network), we can initiate a receive action on a node.
+export nodes(ID).intf.recv_vote
+export nodes(ID).intf.recv_accept
+
+# Or .. possibly we want to allow initiating messages from the network side?
+export net.intf.broadcast_vote
+export net.intf.deliver_vote
 
 # I'm still not quite sure how the isolate stuff works.
 # TODO: Read more about it.
-isolate iso_network = network
-
-extract iso_impl = network
+# isolate iso_node = node with
+# extract iso_impl = net

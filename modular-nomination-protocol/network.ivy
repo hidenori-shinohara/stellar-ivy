@@ -1,40 +1,50 @@
 #lang ivy1.7
 
-module network(node, value) = {
-    relation enqueued_vote(V:node.t, X:value)
-    action enqueue_vote(v:node.t, x:value)
+module network(id_t, val_t) = {
 
-    relation enqueued_accept(V:node.t, X:value)
-    action enqueue_accept(v:node.t, x:value)
+    object intf = {
+        # Network can be called src a node sending a message.
+        action broadcast_vote(src:id_t, value:val_t)
+        action broadcast_accept(src:id_t, value:val_t)
 
-    # This tells node a that node b voted for value x.
-    action deliver_vote(a:node.t, b:node.t, x:value)
-
-    # This tells node a that node b accepted value x.
-    action deliver_accept(a:node.t, b:node.t, x:value)
+        # Network can also be "called" spontaneously to note the
+        # delivery of a message at a node.
+        action deliver_vote(src:id_t, dst:id_t, value:val_t)
+        action deliver_accept(src:id_t, dst:id_t, value:val_t)
+    }
 
 
     object spec = {
-        after enqueue_vote {
-            assert enqueued_vote(v, x);
-            call v.vote_for(x);
+        relation have_broadcast_vote(SRC:id_t, VALUE:val_t)
+        relation have_broadcast_accept(SRC:id_t, VALUE:val_t)
+        relation have_delivered_vote(SRC:id_t, DST:id_t, VALUE:val_t)
+        relation have_delivered_accept(SRC:id_t, DST:id_t, VALUE:val_t)
+
+        before intf.broadcast_vote {
+            require nodes(src).spec.have_voted(value);
         }
-        before deliver_vote {
-            assert enqueued_vote(b, x);
+        after intf.broadcast_vote {
+            have_broadcast_vote(src, value) := true
         }
-        after deliver_vote {
-            assert a.received_vote(b, x);
+
+        before intf.deliver_vote {
+            require have_broadcast_vote(src, value);
+            # Remove this next condition to allow message duplication.
+            require ~have_delivered_vote(src, dst, value);
         }
-        # TODO: accept
+        after intf.deliver_vote {
+            call nodes(dst).intf.recv_vote(src, value);
+            spec.have_delivered_vote(src, dst, value) := true;
+        }
     }
 
     object impl = {
-        implement enqueue_vote {
-            enqueued_vote(v, x) := true;
+        relation something_private(X:id_t)
+        implement intf.broadcast_vote {
+            something_private(src) := true
         }
-        implement deliver_vote {
-            call a.receive_vote(b, x);
+        implement intf.deliver_vote {
+            something_private(src) := true
         }
-        # TODO: accept
     }
 }
