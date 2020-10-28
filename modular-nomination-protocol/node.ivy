@@ -75,11 +75,24 @@ module node(id_t, self_id, val_t) = {
                 forall OTHER . nset.member(OTHER, Q)
                     -> (heard_vote(OTHER, value) | heard_accept(OTHER, value))) {
                 # accept condition 1
-            }
+                have_accepted(value) := true;
+                heard_accept(self_id, value) := true;
+            };
+            # TODO: accept condition 2
+            if (exists Q. is_my_quorum(Q) &
+                forall OTHER . nset.member(OTHER, Q)
+                    -> heard_accept(OTHER, value)) {
+                # Confirm
+                have_confirmed(value) := true;
+                have_candidate_value := true;
+            };
         }
+
         before intf.add_quorum_slice {
             require nset.member(self_id, qslice);
         }
+
+
         after intf.add_quorum_slice {
             intf.is_quorum_slice(qslice) := true;
         }
