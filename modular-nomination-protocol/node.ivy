@@ -1,14 +1,10 @@
 #lang ivy1.7
 
-include set
-
 # id_t is the type of node ids
 # self_id is the id_t of each node instance
 # val_t is the type of values
 
 module node(id_t, self_id, val_t) = {
-
-    instance nset : set(id_t)
 
     # Interface of a node -- only define ways node can be called here.
     object intf = {
@@ -20,19 +16,7 @@ module node(id_t, self_id, val_t) = {
         # and told that someone else voted or accepted.
         action recv_vote(src:id_t, value:val_t)
         action recv_accept(src:id_t, value:val_t)
-
-        relation is_quorum_slice(S:nset)
-        action add_quorum_slice(qslice:nset)
-
-        after init {
-            is_quorum_slice(S) := false;
-        }
     }
-    relation is_my_quorum(Q:nset)
-    definition is_my_quorum(Q) =
-        nset.member(self_id, Q) &
-        forall OTHER .  nset.member(OTHER, Q) ->
-            (exists SLICE . nodes(OTHER).intf.is_quorum_slice(SLICE) & nset.subset(SLICE, Q))
 
     # Logical specs for the interface -- use ghost variables here to track
     # logical changes to node's knowledge and state over time. These may
@@ -71,30 +55,23 @@ module node(id_t, self_id, val_t) = {
 
         after intf.recv_vote {
             heard_vote(src, value) := true;
-            if (exists Q. is_my_quorum(Q) &
-                forall OTHER . nset.member(OTHER, Q)
+            if (exists Q. net.intf.is_quorum(Q) & net.intf.nset.member(self_id, Q) &
+                forall OTHER . net.intf.nset.member(OTHER, Q)
                     -> (heard_vote(OTHER, value) | heard_accept(OTHER, value))) {
                 # accept condition 1
                 have_accepted(value) := true;
                 heard_accept(self_id, value) := true;
             };
-            # TODO: accept condition 2
-            if (exists Q. is_my_quorum(Q) &
-                forall OTHER . nset.member(OTHER, Q)
+
+            # TODO: accept using condition 2
+            
+            if (exists Q. net.intf.is_quorum(Q) &
+                forall OTHER . net.intf.nset.member(OTHER, Q)
                     -> heard_accept(OTHER, value)) {
                 # Confirm
                 have_confirmed(value) := true;
                 have_candidate_value := true;
             };
-        }
-
-        before intf.add_quorum_slice {
-            require nset.member(self_id, qslice);
-        }
-
-
-        after intf.add_quorum_slice {
-            intf.is_quorum_slice(qslice) := true;
         }
     }
 

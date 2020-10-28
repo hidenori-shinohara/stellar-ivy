@@ -1,6 +1,9 @@
 #lang ivy1.7
 
+include set
+
 module network(id_t, val_t) = {
+
 
     object intf = {
         # Network can be called src a node sending a message.
@@ -11,14 +14,29 @@ module network(id_t, val_t) = {
         # delivery of a message at a node.
         action deliver_vote(src:id_t, dst:id_t, value:val_t)
         action deliver_accept(src:id_t, dst:id_t, value:val_t)
-    }
 
+        instance nset : set(id_t)
+        relation is_quorum(S:nset)
+
+        # Two quorums must intersect
+        axiom forall S1, S2. (is_quorum(S1) & is_quorum(S2))
+                -> (exists V. nset.member(V, S1) & nset.member(V, S2))
+        # A quorum must not be empty
+        axiom forall S . is_quorum(S) -> (exists V. nset.member(V, S))
+    }
 
     object spec = {
         relation have_broadcast_vote(SRC:id_t, VALUE:val_t)
         relation have_broadcast_accept(SRC:id_t, VALUE:val_t)
         relation have_delivered_vote(SRC:id_t, DST:id_t, VALUE:val_t)
         relation have_delivered_accept(SRC:id_t, DST:id_t, VALUE:val_t)
+
+        after init {
+            have_broadcast_vote(SRC, VALUE) := false;
+            have_broadcast_accept(SRC, VALUE) := false;
+            have_delivered_vote(SRC, DST, VALUE) := false;
+            have_delivered_accept(SRC, DST, VALUE) := false;
+        }
 
         before intf.broadcast_vote {
             require nodes(src).spec.have_voted(value);
@@ -36,7 +54,7 @@ module network(id_t, val_t) = {
             call nodes(dst).intf.recv_vote(src, value);
             spec.have_delivered_vote(src, dst, value) := true;
         }
-        # If a ndoe accepts something,
+        # If a node accepts something,
         # that's something that some node must have voted for.
         invariant forall ID, VALUE. nodes(ID).spec.have_accepted(VALUE) -> (exists OTHER. nodes(OTHER).spec.have_voted(VALUE))
     }
