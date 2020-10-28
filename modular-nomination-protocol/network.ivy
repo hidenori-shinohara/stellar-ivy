@@ -36,6 +36,9 @@ module network(id_t, val_t) = {
             call nodes(dst).intf.recv_vote(src, value);
             spec.have_delivered_vote(src, dst, value) := true;
         }
+        # If a ndoe accepts something,
+        # that's something that some node must have voted for.
+        invariant forall ID, VALUE. nodes(ID).spec.have_accepted(VALUE) -> (exists OTHER. nodes(OTHER).spec.have_voted(VALUE))
     }
 
     object impl = {

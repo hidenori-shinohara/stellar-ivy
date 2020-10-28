@@ -29,8 +29,3 @@ export nodes(ID).intf.recv_accept
 # Or .. possibly we want to allow initiating messages from the network side?
 export net.intf.broadcast_vote
 export net.intf.deliver_vote
-
-# I'm still not quite sure how the isolate stuff works.
-# TODO: Read more about it.
-# isolate iso_node = node with
-# extract iso_impl = net
