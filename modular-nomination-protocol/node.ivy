@@ -8,6 +8,8 @@ include set
 
 module node(id_t, self_id, val_t) = {
 
+    instance nset : set(id_t)
+
     # Interface of a node -- only define ways node can be called here.
     object intf = {
         # Node can be called from application
@@ -18,6 +20,11 @@ module node(id_t, self_id, val_t) = {
         # and told that someone else voted or accepted.
         action recv_vote(src:id_t, value:val_t)
         action recv_accept(src:id_t, value:val_t)
+        relation is_quorum_slice(VALUE:nset)
+
+        after init {
+            is_quorum_slice(VALUE) := false;
+        }
     }
 
     # Logical specs for the interface -- use ghost variables here to track
@@ -26,21 +33,29 @@ module node(id_t, self_id, val_t) = {
     object spec = {
         relation heard_vote(SRC:id_t, VALUE:val_t)
         relation heard_accept(SRC:id_t, VALUE:val_t)
+
         relation have_voted(VALUE:val_t)
-        # ... other relations tracking state
+        relation have_accepted(VALUE:val_t)
+        relation have_confirmed(VALUE:val_t)
+        relation have_candidate_value
 
         after init {
             heard_vote(ID, VAL) := false;
             heard_accept(ID, VAL) := false;
             have_voted(VAL) := false;
+            have_accepted(VAL) := false;
+            have_confirmed(VAL) := false;
+            have_candidate_value := false;
         }
 
         before intf.vote_for {
-            require ~have_voted(value)
+            require ~have_voted(value);
+            require ~have_candidate_value;
         }
+
         after intf.vote_for {
             have_voted(value) := true;
-            call net.intf.broadcast_vote(self_id, value)
+            call net.intf.broadcast_vote(self_id, value);
         }
 
         before intf.recv_vote {
@@ -49,6 +64,10 @@ module node(id_t, self_id, val_t) = {
 
         after intf.recv_vote {
             heard_vote(src, value) := true;
+            # This doens't make any sense semantically,
+            # but this at least compiles!
+            if exists S. nodes(src).intf.is_quorum_slice(S) {
+            }
         }
     }
 
