@@ -21,8 +21,15 @@ module network(id_t, val_t) = {
         # Two quorums must intersect
         axiom forall S1, S2. (is_quorum(S1) & is_quorum(S2))
                 -> (exists V. nset.member(V, S1) & nset.member(V, S2))
+
         # A quorum must not be empty
         axiom forall S . is_quorum(S) -> (exists V. nset.member(V, S))
+
+        relation is_blocking(V:id_t, B:nset)
+
+        definition is_blocking(V, B) =
+            forall QUORUM . is_quorum(QUORUM) & nset.member(V, QUORUM)
+                                -> exists W . nset.member(W, B) & nset.member(W, QUORUM)
     }
 
     object spec = {

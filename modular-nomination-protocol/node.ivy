@@ -55,15 +55,21 @@ module node(id_t, self_id, val_t) = {
 
         after intf.recv_vote {
             heard_vote(src, value) := true;
+
+            # Condition 1 for accepting
             if (exists Q. net.intf.is_quorum(Q) & net.intf.nset.member(self_id, Q) &
                 forall OTHER . net.intf.nset.member(OTHER, Q)
                     -> (heard_vote(OTHER, value) | heard_accept(OTHER, value))) {
-                # accept condition 1
                 have_accepted(value) := true;
                 heard_accept(self_id, value) := true;
             };
 
-            # TODO: accept using condition 2
+            # Condition 2 for accepting
+            if (exists B. net.intf.is_blocking(self_id, B) &
+                forall V . net.intf.nset.member(V, B) -> heard_accept(V, value)) {
+                have_accepted(value) := true;
+                heard_accept(self_id, value) := true;
+            };
             
             if (exists Q. net.intf.is_quorum(Q) &
                 forall OTHER . net.intf.nset.member(OTHER, Q)
