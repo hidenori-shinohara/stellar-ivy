@@ -20,12 +20,19 @@ module node(id_t, self_id, val_t) = {
         # and told that someone else voted or accepted.
         action recv_vote(src:id_t, value:val_t)
         action recv_accept(src:id_t, value:val_t)
-        relation is_quorum_slice(VALUE:nset)
+
+        relation is_quorum_slice(S:nset)
+        action add_quorum_slice(qslice:nset)
 
         after init {
-            is_quorum_slice(VALUE) := false;
+            is_quorum_slice(S) := false;
         }
     }
+    relation is_my_quorum(Q:nset)
+    definition is_my_quorum(Q) =
+        nset.member(self_id, Q) &
+        forall OTHER .  nset.member(OTHER, Q) ->
+            (exists SLICE . nodes(OTHER).intf.is_quorum_slice(SLICE) & nset.subset(SLICE, Q))
 
     # Logical specs for the interface -- use ghost variables here to track
     # logical changes to node's knowledge and state over time. These may
@@ -64,10 +71,14 @@ module node(id_t, self_id, val_t) = {
 
         after intf.recv_vote {
             heard_vote(src, value) := true;
-            # This doens't make any sense semantically,
-            # but this at least compiles!
-            if exists S. nodes(src).intf.is_quorum_slice(S) {
+            if (exists S. nodes(src).intf.is_quorum_slice(S)) {
             }
+        }
+        before intf.add_quorum_slice {
+            require nset.member(self_id, qslice);
+        }
+        after intf.add_quorum_slice {
+            intf.is_quorum_slice(qslice) := true;
         }
     }
 
