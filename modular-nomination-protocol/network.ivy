@@ -99,6 +99,15 @@ module network(id_t, val_t) = {
         # then there must exist at least one node that has voted for VALUE.
         invariant nodes(ID).spec.have_confirmed(VALUE) ->
                     exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
+
+# IVy can't seem to prove this.
+#        invariant [eventually_at_least_one_candidate_value]
+#            nodes(ID).spec.have_voted(VALUE)
+#                -> nodes(ID).spec.have_confirmed(VALUE) |
+#                   (exists SRC, DST . have_broadcast_vote(SRC, VALUE) &
+#                                      ~have_delivered_vote(SRC, DST, VALUE)) |
+#                   (exists SRC, DST . have_broadcast_accept(SRC, VALUE) &
+#                                      ~have_delivered_accept(SRC, DST, VALUE))
     }
 
     object impl = {
