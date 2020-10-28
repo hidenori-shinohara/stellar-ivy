@@ -94,6 +94,11 @@ module network(id_t, val_t) = {
         # then there must exist at least one node that has voted for VALUE.
         invariant nodes(ID).spec.have_accepted(VALUE) ->
                     exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
+
+        # If ID confirms VALUE,
+        # then there must exist at least one node that has voted for VALUE.
+        invariant nodes(ID).spec.have_confirmed(VALUE) ->
+                    exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
     }
 
     object impl = {
