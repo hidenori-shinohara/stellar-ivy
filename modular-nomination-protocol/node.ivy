@@ -71,7 +71,10 @@ module node(id_t, self_id, val_t) = {
 
         after intf.recv_vote {
             heard_vote(src, value) := true;
-            if (exists S. nodes(src).intf.is_quorum_slice(S)) {
+            if (exists Q. is_my_quorum(Q) &
+                forall OTHER . nset.member(OTHER, Q)
+                    -> (heard_vote(OTHER, value) | heard_accept(OTHER, value))) {
+                # accept condition 1
             }
         }
         before intf.add_quorum_slice {
