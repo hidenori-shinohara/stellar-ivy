@@ -15,6 +15,10 @@ module network(id_t, val_t) = {
         action deliver_vote(src:id_t, dst:id_t, value:val_t)
         action deliver_accept(src:id_t, dst:id_t, value:val_t)
 
+        # Adding quorums in the network module lets us not worry about quorum slices.
+        # In the actual network, each node's quorum slices are public information
+        # and the calculation of quorums from quorum slices is deterministic,
+        # so it doesn't seem like such a bad idea to put this here.
         instance nset : set(id_t)
         relation is_quorum(S:nset)
 
