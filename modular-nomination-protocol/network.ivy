@@ -132,6 +132,12 @@ module network(id_t, val_t) = {
 #                                      ~have_delivered_vote(SRC, DST, VALUE)) |
 #                   (exists SRC, DST . have_broadcast_accept(SRC, VALUE) &
 #                                      ~have_delivered_accept(SRC, DST, VALUE))
+
+#        invariant [eventually_same_candidate_set]
+#            (forall SRC, DST, VALUE.
+#                have_broadcast_vote(SRC, VALUE) -> have_delivered_vote(SRC, DST, VALUE) &
+#                have_broadcast_accept(SRC, VALUE) -> have_delivered_accept(SRC, DST, VALUE))
+#            -> (forall NODE1, NODE2, VALUE. nodes(NODE1).spec.have_confirmed(VALUE) -> nodes(NODE2).spec.have_confirmed(VALUE))
     }
 
     object impl = {
