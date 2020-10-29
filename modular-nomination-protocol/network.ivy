@@ -96,6 +96,9 @@ module network(id_t, val_t) = {
         # Seemingly trivial invariants.
         # For some reason, IVy seems to like to come up with CTIs that violate these,
         # so it's probably a good idea to keep these here.
+        # There are some interesting cases.
+        # For instance, accept(VALUE) can be delivered without a single vote being delivered
+        # when the network only consists of one node.
         invariant have_broadcast_vote(NODE, VALUE) -> nodes(NODE).spec.have_voted(VALUE)
         invariant have_delivered_vote(SRC, DST, VALUE)
                     <-> nodes(SRC).spec.have_voted(VALUE) &
