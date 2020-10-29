@@ -98,11 +98,12 @@ module network(id_t, val_t) = {
         # so it's probably a good idea to keep these here.
         # There are some interesting cases.
         # For instance, accept(VALUE) can be delivered without a single vote being delivered
-        # when the network only consists of one node.
+        # when a node considers the set containing only itself as a quorum slice.
         invariant have_broadcast_vote(NODE, VALUE) -> nodes(NODE).spec.have_voted(VALUE)
         invariant have_delivered_vote(SRC, DST, VALUE)
                     <-> nodes(SRC).spec.have_voted(VALUE) &
-                       nodes(DST).spec.heard_vote(SRC, VALUE)
+                       nodes(DST).spec.heard_vote(SRC, VALUE) &
+                       have_broadcast_vote(SRC, VALUE)
         invariant have_broadcast_accept(NODE, VALUE) -> nodes(NODE).spec.have_accepted(VALUE)
         invariant nodes(ID).spec.have_accepted(VALUE) ->
                     exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
@@ -115,13 +116,13 @@ module network(id_t, val_t) = {
 
 # IVy can't seem to prove this yet.
 # The setup is wrong and/or I haven't added enough invariants.
-#         invariant [if_confirmed_everyone_will_confirm]
-#             nodes(ID).spec.have_confirmed(VALUE)
-#                 -> (forall OTHER_ID . nodes(OTHER_ID).spec.have_confirmed(VALUE)) |
-#                    (exists SRC, DST . have_broadcast_vote(SRC, VALUE) &
-#                                       ~have_delivered_vote(SRC, DST, VALUE)) |
-#                    (exists SRC, DST . have_broadcast_accept(SRC, VALUE) &
-#                                       ~have_delivered_accept(SRC, DST, VALUE))
+#        invariant [if_confirmed_everyone_will_confirm]
+#            nodes(ID).spec.have_confirmed(VALUE)
+#                -> (forall OTHER_ID . nodes(OTHER_ID).spec.have_confirmed(VALUE)) |
+#                   (exists SRC, DST . have_broadcast_vote(SRC, VALUE) &
+#                                      ~have_delivered_vote(SRC, DST, VALUE)) |
+#                   (exists SRC, DST . have_broadcast_accept(SRC, VALUE) &
+#                                      ~have_delivered_accept(SRC, DST, VALUE))
 
 # IVy can't seem to prove this.
 #        invariant [eventually_at_least_one_candidate_value]
