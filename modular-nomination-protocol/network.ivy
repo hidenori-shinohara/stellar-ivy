@@ -29,6 +29,10 @@ module network(id_t, val_t) = {
         # A quorum must not be empty
         axiom forall S . is_quorum(S) -> (exists V. nset.member(V, S))
 
+        # The set of all nodes is a quorum.
+        # This is indeed true because every quorum slice is contained in the set of all nodes.
+        axiom is_quorum(nset.universe)
+
         relation is_blocking(V:id_t, B:nset)
 
         definition is_blocking(V, B) =
@@ -53,7 +57,8 @@ module network(id_t, val_t) = {
             require nodes(src).spec.have_voted(value);
         }
         after intf.broadcast_vote {
-            have_broadcast_vote(src, value) := true
+            have_broadcast_vote(src, value) := true;
+            have_delivered_vote(src, src, value) := true
         }
 
         before intf.deliver_vote {
@@ -70,7 +75,8 @@ module network(id_t, val_t) = {
             require nodes(src).spec.have_accepted(value);
         }
         after intf.broadcast_accept {
-            have_broadcast_accept(src, value) := true
+            have_broadcast_accept(src, value) := true;
+            have_delivered_accept(src, src, value) := true
         }
 
         before intf.deliver_accept {
@@ -90,19 +96,29 @@ module network(id_t, val_t) = {
         # Seemingly trivial invariants.
         # For some reason, IVy seems to like to come up with CTIs that violate these,
         # so it's probably a good idea to keep these here.
-        invariant have_delivered_vote(SRC, DST, VALUE) -> nodes(SRC).spec.have_voted(VALUE)
+        invariant have_broadcast_vote(NODE, VALUE) -> nodes(NODE).spec.have_voted(VALUE)
+        invariant have_delivered_vote(SRC, DST, VALUE)
+                    <-> nodes(SRC).spec.have_voted(VALUE) &
+                       nodes(DST).spec.heard_vote(SRC, VALUE)
         invariant have_broadcast_accept(NODE, VALUE) -> nodes(NODE).spec.have_accepted(VALUE)
-        invariant have_delivered_accept(SRC, DST, VALUE) -> nodes(SRC).spec.have_accepted(VALUE)
-
-        # If ID accepts VALUE,
-        # then there must exist at least one node that has voted for VALUE.
         invariant nodes(ID).spec.have_accepted(VALUE) ->
                     exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
-
-        # If ID confirms VALUE,
-        # then there must exist at least one node that has voted for VALUE.
+        invariant have_delivered_accept(SRC, DST, VALUE)
+                    -> exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
+        invariant have_delivered_accept(SRC, DST, VALUE)
+                    -> nodes(SRC).spec.have_accepted(VALUE)
         invariant nodes(ID).spec.have_confirmed(VALUE) ->
                     exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
+
+# IVy can't seem to prove this yet.
+# The setup is wrong and/or I haven't added enough invariants.
+#         invariant [if_confirmed_everyone_will_confirm]
+#             nodes(ID).spec.have_confirmed(VALUE)
+#                 -> (forall OTHER_ID . nodes(OTHER_ID).spec.have_confirmed(VALUE)) |
+#                    (exists SRC, DST . have_broadcast_vote(SRC, VALUE) &
+#                                       ~have_delivered_vote(SRC, DST, VALUE)) |
+#                    (exists SRC, DST . have_broadcast_accept(SRC, VALUE) &
+#                                       ~have_delivered_accept(SRC, DST, VALUE))
 
 # IVy can't seem to prove this.
 #        invariant [eventually_at_least_one_candidate_value]
