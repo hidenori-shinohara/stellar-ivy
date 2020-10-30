@@ -116,6 +116,8 @@ module network(id_t, val_t) = {
         # Invariants for CTIs for eventually_same_candidate_set.
         invariant have_delivered_accept(SRC, DST, VALUE)
                     -> have_broadcast_accept(SRC, VALUE)
+        invariant have_broadcast_accept(NODE, VALUE)
+                    -> have_delivered_accept(NODE, NODE, VALUE)
         invariant have_delivered_accept(SRC, DST, VALUE)
                     -> have_delivered_accept(SRC, SRC, VALUE)
 
