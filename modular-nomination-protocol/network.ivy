@@ -113,6 +113,11 @@ module network(id_t, val_t) = {
                     -> nodes(SRC).spec.have_accepted(VALUE)
         invariant nodes(ID).spec.have_confirmed(VALUE) ->
                     exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
+        # Invariants for CTIs for eventually_same_candidate_set.
+        invariant have_delivered_accept(SRC, DST, VALUE)
+                    -> have_broadcast_accept(SRC, VALUE)
+        invariant have_delivered_accept(SRC, DST, VALUE)
+                    -> have_delivered_accept(SRC, SRC, VALUE)
 
 # IVy can't seem to prove this yet.
 # The setup is wrong and/or I haven't added enough invariants.
@@ -133,11 +138,11 @@ module network(id_t, val_t) = {
 #                   (exists SRC, DST . have_broadcast_accept(SRC, VALUE) &
 #                                      ~have_delivered_accept(SRC, DST, VALUE))
 
-#        invariant [eventually_same_candidate_set]
-#            (forall SRC, DST, VALUE.
-#                have_broadcast_vote(SRC, VALUE) -> have_delivered_vote(SRC, DST, VALUE) &
-#                have_broadcast_accept(SRC, VALUE) -> have_delivered_accept(SRC, DST, VALUE))
-#            -> (forall NODE1, NODE2, VALUE. nodes(NODE1).spec.have_confirmed(VALUE) -> nodes(NODE2).spec.have_confirmed(VALUE))
+        invariant [eventually_same_candidate_set]
+            (forall SRC, DST, VALUE.
+                (have_broadcast_vote(SRC, VALUE) -> have_delivered_vote(SRC, DST, VALUE)) &
+                (have_broadcast_accept(SRC, VALUE) -> have_delivered_accept(SRC, DST, VALUE)))
+            -> (forall NODE1, NODE2, VALUE. nodes(NODE1).spec.have_confirmed(VALUE) -> nodes(NODE2).spec.have_confirmed(VALUE))
     }
 
     object impl = {
