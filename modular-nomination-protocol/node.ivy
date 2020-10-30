@@ -62,6 +62,7 @@ module node(id_t, self_id, val_t) = {
                     -> (heard_vote(OTHER, value) | heard_accept(OTHER, value))) {
                 have_accepted(value) := true;
                 heard_accept(self_id, value) := true;
+                call net.intf.broadcast_accept(self_id, value);
             };
 
             # Condition 2 for accepting
@@ -69,6 +70,7 @@ module node(id_t, self_id, val_t) = {
                 forall V . net.intf.nset.member(V, B) -> heard_accept(V, value)) {
                 have_accepted(value) := true;
                 heard_accept(self_id, value) := true;
+                call net.intf.broadcast_accept(self_id, value);
             };
             
             # Confirm
@@ -89,6 +91,7 @@ module node(id_t, self_id, val_t) = {
                     -> (heard_vote(OTHER, value) | heard_accept(OTHER, value))) {
                 have_accepted(value) := true;
                 heard_accept(self_id, value) := true;
+                call net.intf.broadcast_accept(self_id, value);
             };
 
             # Condition 2 for accepting
@@ -96,6 +99,7 @@ module node(id_t, self_id, val_t) = {
                 forall V . net.intf.nset.member(V, B) -> heard_accept(V, value)) {
                 have_accepted(value) := true;
                 heard_accept(self_id, value) := true;
+                call net.intf.broadcast_accept(self_id, value);
             };
             
             # Confirm
