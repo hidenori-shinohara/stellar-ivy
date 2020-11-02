@@ -111,6 +111,8 @@ module network(id_t, val_t) = {
                     -> exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
         invariant have_delivered_accept(SRC, DST, VALUE)
                     -> nodes(SRC).spec.have_accepted(VALUE)
+        invariant (SRC ~= DST & have_delivered_accept(SRC, DST, VALUE))
+                    -> nodes(DST).spec.heard_accept(SRC, VALUE)
         invariant nodes(ID).spec.have_confirmed(VALUE) ->
                     exists OTHER. nodes(OTHER).spec.have_voted(VALUE)
         # Invariants for CTIs for eventually_same_candidate_set.
