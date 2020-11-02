@@ -58,7 +58,6 @@ module network(id_t, val_t) = {
         }
         after intf.broadcast_vote {
             have_broadcast_vote(src, value) := true;
-            have_delivered_vote(src, src, value) := true
         }
 
         before intf.deliver_vote {
@@ -76,7 +75,6 @@ module network(id_t, val_t) = {
         }
         after intf.broadcast_accept {
             have_broadcast_accept(src, value) := true;
-            have_delivered_accept(src, src, value) := true
         }
 
         before intf.deliver_accept {
@@ -118,10 +116,6 @@ module network(id_t, val_t) = {
         # Invariants for CTIs for eventually_same_candidate_set.
         invariant have_delivered_accept(SRC, DST, VALUE)
                     -> have_broadcast_accept(SRC, VALUE)
-        invariant have_broadcast_accept(NODE, VALUE)
-                    -> have_delivered_accept(NODE, NODE, VALUE)
-        invariant have_delivered_accept(SRC, DST, VALUE)
-                    -> have_delivered_accept(SRC, SRC, VALUE)
 
 # IVy can't seem to prove this yet.
 # The setup is wrong and/or I haven't added enough invariants.
