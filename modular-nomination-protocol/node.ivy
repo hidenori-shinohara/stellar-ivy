@@ -126,9 +126,6 @@ module node(id_t, self_id, val_t) = {
                 have_candidate_value := true;
             };
         }
-# When the following invariant is added,
-# IVy complains about an infinite sequence of instantiations which I don't quite understand..
-#        invariant exists Q. net.intf.nset.member(self_id, Q)
     }
 
     # Implementation of the interface matching the logical specs -- use concrete
